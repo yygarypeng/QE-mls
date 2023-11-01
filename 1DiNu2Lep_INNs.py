@@ -53,7 +53,7 @@ gc.collect()
 
 from sklearn.model_selection import train_test_split
 
-indices_arr = np.arange(5e3, dtype=int)
+indices_arr = np.arange(1e4, dtype=int)
 
 lepton_features = [
     "lep_p_E",
@@ -144,7 +144,7 @@ gc.collect()
 x_dim = 2 * 4 + 4
 # observed (MET)
 y_dim = 2 * 4 + 2
-z_dim = 2 * 4
+z_dim = 4
 
 tot_dim = y_dim + z_dim
 pad_dim = tot_dim - x_dim
@@ -170,9 +170,9 @@ n_sample = X.shape[0]
 n_data = n_sample * train_y.flatten().shape[0]
 n_couple_layer = 3
 n_hid_layer = 3
-n_hid_dim = 512
+n_hid_dim = 16
 
-n_batch = 2048
+n_batch = 1024
 n_epoch = 50
 n_display = 10
 
@@ -284,7 +284,7 @@ hist = trainer.fit(
     epochs=n_epoch,
     steps_per_epoch=n_data // n_batch,
     callbacks=[logger, LossFactor],
-    verbose=1,
+    verbose=2,
 )
 
 fig, ax = plt.subplots(1, facecolor="white", figsize=(8, 5))

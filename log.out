@@ -1,0 +1,36 @@
+2.13.0
+[PhysicalDevice(name='/physical_device:CPU:0', device_type='CPU'), PhysicalDevice(name='/physical_device:GPU:0', device_type='GPU'), PhysicalDevice(name='/physical_device:GPU:1', device_type='GPU')]
+['/root/work/truth/signal/CGLMP.npz', '/root/work/truth/signal/Higgs.npz', '/root/work/truth/signal/LeadLepton.npz', '/root/work/truth/signal/LeptonM.npz', '/root/work/truth/signal/LeptonP.npz', '/root/work/truth/signal/LmNu.npz', '/root/work/truth/signal/LpNu.npz', '/root/work/truth/signal/MET.npz', '/root/work/truth/signal/WmBoson.npz', '/root/work/truth/signal/WpBoson.npz', '/root/work/truth/signal/diLepton.npz', '/root/work/truth/signal/subLeadLepton.npz', '/root/work/truth/signal/xi_xyz.npz']
+lep_kin shape: (2928862, 8)
+MET_kin shape: (2928862, 4)
+dinu_kin shape: (2928862, 4)
+CGLMP shape: (2928862, 3)
+X (Interest)
+Training data shape: (96000,)
+Testing data shape: (12000,)
+Validation data shape: (12000,)
+
+Y (Observed)
+Training data shape: (80000,)
+Testing data shape: (10000,)
+Validation data shape: (10000,)
+Model: "NVP"
+_________________________________________________________________
+ Layer (type)                Output Shape              Param #   
+=================================================================
+ Layer0 (TwoNVPCouplingLaye  multiple                  1834      
+ rs)                                                             
+                                                                 
+ Layer1 (TwoNVPCouplingLaye  multiple                  1834      
+ rs)                                                             
+                                                                 
+ Layer2 (TwoNVPCouplingLaye  multiple                  1834      
+ rs)                                                             
+                                                                 
+=================================================================
+Total params: 5502 (21.66 KB)
+Trainable params: 5460 (21.33 KB)
+Non-trainable params: 42 (336.00 Byte)
+_________________________________________________________________
+=== Started at 2023-11-01 05h:52m:18s ===
+Epoch 1/50
