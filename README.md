@@ -1,8 +1,12 @@
+> This is the edited fork from [GitHub](https://github.com/jaekookang/invertible_neural_networks) created by jaekookang.
+
+> We use and edit it to do the backward reconstruction of di-nutrinos which is from the fully leptonic decay of the HWW* channel.
+
 # Implementation of Invertible Neural Networks (INNs) based on Ardizzone et al. (2019) using TensorFlow2 + Keras
 
 ![gaussian_mixture](https://github.com/jaekookang/invertible_neural_networks/blob/master/result/gauss_mixture.gif)
 
-This repository includes the code example of the invertible neural networks (Ardizzone et al., 2019) implemented using TensorFlow2 with Keras. Two complementary coupling layers were implemented and toy examples were provided similar to the paper. The current code is largely based on the original PyTorch implementation by the authors, but simplified for the easier understanding than the original code and for the personal use.
+This repository includes the code example of the invertible neural networks (Ardizzone et al., 2019) implemented using TensorFlow2 with Keras. Two complementary coupling layers were implemented and toy examples were provided similar to the paper. The current code is largely based on the original PyTorch implementation by the authors but simplified for easier understanding than the original code and personal use.
 
 2020-11-26 first created
 
