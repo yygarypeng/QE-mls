@@ -121,10 +121,10 @@ test_y = stack_parts(lep_test, nu_test)
 print(
     f"X (Interest)\nTraining data shape: {train_x.shape}\nTesting data shape: {test_x.shape}\nValidation data shape: {valid_x.shape}"
 )
-print()
 print(
     f"Y (Observed)\nTraining data shape: {train_y.shape}\nTesting data shape: {test_y.shape}\nValidation data shape: {valid_y.shape}"
 )
+print()
 
 del (
     train_indices,
@@ -144,7 +144,7 @@ gc.collect()
 x_dim = 2 * 4 + 4
 # observed (MET)
 y_dim = 2 * 4 + 2
-z_dim = 4
+z_dim = 2 * 4 + 4
 
 tot_dim = y_dim + z_dim
 pad_dim = tot_dim - x_dim
@@ -170,9 +170,9 @@ n_sample = X.shape[0]
 n_data = n_sample * train_y.flatten().shape[0]
 n_couple_layer = 3
 n_hid_layer = 3
-n_hid_dim = 16
+n_hid_dim = 512
 
-n_batch = 1024
+n_batch = 512
 n_epoch = 50
 n_display = 10
 
@@ -293,7 +293,8 @@ ax.plot(hist.history["forward_loss"], "b.-", label="forward_loss")
 ax.plot(hist.history["latent_loss"], "g.-", label="latent_loss")
 ax.plot(hist.history["rev_loss"], "r.-", label="inverse_loss")
 plt.legend()
-plt.show()
+plt.savefig("loss.png")
+# plt.show()
 plt.close()
 
 y_hat = np.zeros((test_y.reshape(-1, y_dim).shape[0], y_dim))
@@ -317,7 +318,7 @@ plt.title(r"$p^{miss}_{z}$")
 plt.xlabel("truth")
 plt.ylabel("pred")
 plt.savefig("pz.png")
-plt.show()
+# plt.show()
 plt.close()
 
 plt.plot(E_truth, E_pred, ".", alpha=0.3, color="purple")
@@ -325,6 +326,8 @@ plt.title(r"$E^{miss}$")
 plt.xlabel("truth")
 plt.ylabel("pred")
 plt.savefig("energy.png")
-plt.show()
+# plt.show()
 plt.close()
+
+
 print("Finish!")

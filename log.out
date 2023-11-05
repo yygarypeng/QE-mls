@@ -9,28 +9,28 @@ X (Interest)
 Training data shape: (96000,)
 Testing data shape: (12000,)
 Validation data shape: (12000,)
-
 Y (Observed)
 Training data shape: (80000,)
 Testing data shape: (10000,)
 Validation data shape: (10000,)
+
 Model: "NVP"
 _________________________________________________________________
  Layer (type)                Output Shape              Param #   
 =================================================================
- Layer0 (TwoNVPCouplingLaye  multiple                  1834      
+ Layer0 (TwoNVPCouplingLaye  multiple                  1085506   
  rs)                                                             
                                                                  
- Layer1 (TwoNVPCouplingLaye  multiple                  1834      
+ Layer1 (TwoNVPCouplingLaye  multiple                  1085506   
  rs)                                                             
                                                                  
- Layer2 (TwoNVPCouplingLaye  multiple                  1834      
+ Layer2 (TwoNVPCouplingLaye  multiple                  1085506   
  rs)                                                             
                                                                  
 =================================================================
-Total params: 5502 (21.66 KB)
-Trainable params: 5460 (21.33 KB)
-Non-trainable params: 42 (336.00 Byte)
+Total params: 3256518 (12.42 MB)
+Trainable params: 3256452 (12.42 MB)
+Non-trainable params: 66 (528.00 Byte)
 _________________________________________________________________
-=== Started at 2023-11-01 05h:52m:18s ===
+=== Started at 2023-11-05 08h:01m:07s ===
 Epoch 1/50
