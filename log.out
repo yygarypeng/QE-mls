@@ -1,36 +1,54 @@
 2.13.0
 [PhysicalDevice(name='/physical_device:CPU:0', device_type='CPU'), PhysicalDevice(name='/physical_device:GPU:0', device_type='GPU'), PhysicalDevice(name='/physical_device:GPU:1', device_type='GPU')]
+
 ['/root/work/truth/signal/CGLMP.npz', '/root/work/truth/signal/Higgs.npz', '/root/work/truth/signal/LeadLepton.npz', '/root/work/truth/signal/LeptonM.npz', '/root/work/truth/signal/LeptonP.npz', '/root/work/truth/signal/LmNu.npz', '/root/work/truth/signal/LpNu.npz', '/root/work/truth/signal/MET.npz', '/root/work/truth/signal/WmBoson.npz', '/root/work/truth/signal/WpBoson.npz', '/root/work/truth/signal/diLepton.npz', '/root/work/truth/signal/subLeadLepton.npz', '/root/work/truth/signal/xi_xyz.npz']
-lep_kin shape: (2928862, 8)
-MET_kin shape: (2928862, 4)
+
+MET_kin shape: (2928862, 2)
+       MET_px     MET_py
+0   21.531590  58.661363
+1  142.831582 -36.235636
+2   -4.344014 -53.593527
+3  -19.836591 -17.248187
+4  -21.864079 -26.724745
+
 dinu_kin shape: (2928862, 4)
-CGLMP shape: (2928862, 3)
+         nu_E       nu_px      nu_py       nu_pz
+0  122.129977   21.531590  58.661363   93.688699
+1  611.032109  142.831582 -36.235636  592.323953
+2   74.715202   -4.118662 -52.749777   44.663706
+3   41.097882  -19.836591 -17.248187   12.641004
+4  154.431047  -21.864079 -26.724745  149.285883
+
 X (Interest)
-Training data shape: (96000,)
-Testing data shape: (12000,)
-Validation data shape: (12000,)
+Training data shape: (8000, 4);
+Testing data shape: (2000, 4).
 Y (Observed)
-Training data shape: (80000,)
-Testing data shape: (10000,)
-Validation data shape: (10000,)
+Training data shape: (8000, 2);
+Testing data shape: (2000, 2).
+
+x (8000, 6)
+y (8000, 2)
+z (8000, 4)
+Input dataset shape: (8000, 6), (8000, 6)
 
 Model: "NVP"
 _________________________________________________________________
  Layer (type)                Output Shape              Param #   
 =================================================================
- Layer0 (TwoNVPCouplingLaye  multiple                  1085506   
+ Layer0 (TwoNVPCouplingLaye  multiple                  68626     
  rs)                                                             
                                                                  
- Layer1 (TwoNVPCouplingLaye  multiple                  1085506   
+ Layer1 (TwoNVPCouplingLaye  multiple                  68626     
  rs)                                                             
                                                                  
- Layer2 (TwoNVPCouplingLaye  multiple                  1085506   
+ Layer2 (TwoNVPCouplingLaye  multiple                  68626     
  rs)                                                             
                                                                  
 =================================================================
-Total params: 3256518 (12.42 MB)
-Trainable params: 3256452 (12.42 MB)
-Non-trainable params: 66 (528.00 Byte)
+Total params: 205878 (804.28 KB)
+Trainable params: 205860 (804.14 KB)
+Non-trainable params: 18 (144.00 Byte)
 _________________________________________________________________
-=== Started at 2023-11-05 08h:01m:07s ===
-Epoch 1/50
+
+=== Started at 2023-11-09 07h:02m:39s ===
+Epoch 1/64

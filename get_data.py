@@ -15,6 +15,7 @@ class DataProcessor:
         self.files_name.sort()
         self.files = [self.get_data(f) for f in self.files_name]
         print(files_name)
+        print()
 
     def get_files_names(self, path):
         files_name = glob.glob(path)
@@ -52,14 +53,14 @@ class DataProcessor:
         nu_kin = (
             pd.DataFrame(
                 {
-                    "di_nu_E": np.sqrt(
+                    "MET_E": np.sqrt(
                         np.square(34141 * np.ones(len(MET)))
                         + np.square(MET["px"])
                         + np.square(MET["py"])
                     ),
-                    "di_nu_px": MET["px"],
-                    "di_nu_py": MET["py"],
-                    "di_nu_pz": np.zeros(len(MET)),
+                    "MET_px": MET["px"],
+                    "MET_py": MET["py"],
+                    "MET_pz": np.zeros(len(MET)),
                 }
             )
             / self.GEV
