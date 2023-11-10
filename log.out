@@ -3,52 +3,188 @@
 
 ['/root/work/truth/signal/CGLMP.npz', '/root/work/truth/signal/Higgs.npz', '/root/work/truth/signal/LeadLepton.npz', '/root/work/truth/signal/LeptonM.npz', '/root/work/truth/signal/LeptonP.npz', '/root/work/truth/signal/LmNu.npz', '/root/work/truth/signal/LpNu.npz', '/root/work/truth/signal/MET.npz', '/root/work/truth/signal/WmBoson.npz', '/root/work/truth/signal/WpBoson.npz', '/root/work/truth/signal/diLepton.npz', '/root/work/truth/signal/subLeadLepton.npz', '/root/work/truth/signal/xi_xyz.npz']
 
-MET_kin shape: (2928862, 2)
-       MET_px     MET_py
-0   21.531590  58.661363
-1  142.831582 -36.235636
-2   -4.344014 -53.593527
-3  -19.836591 -17.248187
-4  -21.864079 -26.724745
+MET_kin shape: (2928862, 10)
+       MET_px     MET_py     lep_p_E  ...   lep_m_px   lep_m_py   lep_m_pz
+0   21.531590  58.661363   19.465703  ...  11.081455   2.673936  -3.847299
+1  142.831582 -36.235636  131.817141  ... -13.096559  14.755815  63.403242
+2   -4.344014 -53.593527   94.193734  ...   7.589698   1.677931  25.090863
 
-dinu_kin shape: (2928862, 4)
-         nu_E       nu_px      nu_py       nu_pz
-0  122.129977   21.531590  58.661363   93.688699
-1  611.032109  142.831582 -36.235636  592.323953
-2   74.715202   -4.118662 -52.749777   44.663706
-3   41.097882  -19.836591 -17.248187   12.641004
-4  154.431047  -21.864079 -26.724745  149.285883
+[3 rows x 10 columns]
+dinu_kin shape: (2928862, 12)
+         nu_E       nu_px      nu_py  ...   lep_m_px   lep_m_py   lep_m_pz
+0  122.129977   21.531590  58.661363  ...  11.081455   2.673936  -3.847299
+1  611.032109  142.831582 -36.235636  ... -13.096559  14.755815  63.403242
+2   74.715202   -4.118662 -52.749777  ...   7.589698   1.677931  25.090863
+
+[3 rows x 12 columns]
 
 X (Interest)
-Training data shape: (8000, 4);
-Testing data shape: (2000, 4).
+Training data shape: (80000, 12);
+Testing data shape: (20000, 12).
 Y (Observed)
-Training data shape: (8000, 2);
-Testing data shape: (2000, 2).
+Training data shape: (80000, 10);
+Testing data shape: (20000, 10).
 
-x (8000, 6)
-y (8000, 2)
-z (8000, 4)
-Input dataset shape: (8000, 6), (8000, 6)
+x (80000, 18)
+y (80000, 10)
+z (80000, 8)
+Input dataset shape -> X:(80000, 18), Y: (80000, 18)
 
 Model: "NVP"
 _________________________________________________________________
  Layer (type)                Output Shape              Param #   
 =================================================================
- Layer0 (TwoNVPCouplingLaye  multiple                  68626     
+ Layer0 (TwoNVPCouplingLaye  multiple                  6070      
  rs)                                                             
                                                                  
- Layer1 (TwoNVPCouplingLaye  multiple                  68626     
+ Layer1 (TwoNVPCouplingLaye  multiple                  6070      
  rs)                                                             
                                                                  
- Layer2 (TwoNVPCouplingLaye  multiple                  68626     
+ Layer2 (TwoNVPCouplingLaye  multiple                  6070      
+ rs)                                                             
+                                                                 
+ Layer3 (TwoNVPCouplingLaye  multiple                  6070      
+ rs)                                                             
+                                                                 
+ Layer4 (TwoNVPCouplingLaye  multiple                  6070      
  rs)                                                             
                                                                  
 =================================================================
-Total params: 205878 (804.28 KB)
-Trainable params: 205860 (804.14 KB)
-Non-trainable params: 18 (144.00 Byte)
+Total params: 30350 (118.91 KB)
+Trainable params: 30260 (118.20 KB)
+Non-trainable params: 90 (720.00 Byte)
 _________________________________________________________________
-
-=== Started at 2023-11-09 07h:02m:39s ===
+=== Started at 2023-11-10 08h:15m:32s ===
 Epoch 1/64
+ 2023-11-10 08h:19m:05s | Epoch: 01/64 | total_loss=0.705539 forward_loss=0.165570 latent_loss=0.059869 rev_loss=0.480100
+6250/6250 - 213s - total_loss: 0.7055 - forward_loss: 0.1656 - latent_loss: 0.0599 - rev_loss: 0.4801 - 213s/epoch - 34ms/step
+Epoch 2/64
+6250/6250 - 190s - total_loss: 0.4857 - forward_loss: 0.0845 - latent_loss: 0.0497 - rev_loss: 0.3515 - 190s/epoch - 30ms/step
+Epoch 3/64
+6250/6250 - 193s - total_loss: 0.4244 - forward_loss: 0.0622 - latent_loss: 0.0496 - rev_loss: 0.3126 - 193s/epoch - 31ms/step
+Epoch 4/64
+6250/6250 - 193s - total_loss: 0.5012 - forward_loss: 0.1267 - latent_loss: 0.0510 - rev_loss: 0.3235 - 193s/epoch - 31ms/step
+Epoch 5/64
+6250/6250 - 190s - total_loss: 0.5256 - forward_loss: 0.1373 - latent_loss: 0.0504 - rev_loss: 0.3379 - 190s/epoch - 30ms/step
+Epoch 6/64
+6250/6250 - 191s - total_loss: 0.5123 - forward_loss: 0.1596 - latent_loss: 0.0504 - rev_loss: 0.3024 - 191s/epoch - 31ms/step
+Epoch 7/64
+6250/6250 - 192s - total_loss: 0.4588 - forward_loss: 0.1077 - latent_loss: 0.0492 - rev_loss: 0.3019 - 192s/epoch - 31ms/step
+Epoch 8/64
+6250/6250 - 195s - total_loss: 0.4475 - forward_loss: 0.0764 - latent_loss: 0.0493 - rev_loss: 0.3218 - 195s/epoch - 31ms/step
+Epoch 9/64
+6250/6250 - 194s - total_loss: 0.4192 - forward_loss: 0.0760 - latent_loss: 0.0491 - rev_loss: 0.2941 - 194s/epoch - 31ms/step
+Epoch 10/64
+6250/6250 - 193s - total_loss: 0.3970 - forward_loss: 0.0708 - latent_loss: 0.0489 - rev_loss: 0.2774 - 193s/epoch - 31ms/step
+Epoch 11/64
+6250/6250 - 193s - total_loss: 0.4923 - forward_loss: 0.1477 - latent_loss: 0.0485 - rev_loss: 0.2961 - 193s/epoch - 31ms/step
+Epoch 12/64
+6250/6250 - 192s - total_loss: 0.4695 - forward_loss: 0.1373 - latent_loss: 0.0490 - rev_loss: 0.2832 - 192s/epoch - 31ms/step
+Epoch 13/64
+6250/6250 - 191s - total_loss: 0.4201 - forward_loss: 0.0639 - latent_loss: 0.0495 - rev_loss: 0.3067 - 191s/epoch - 31ms/step
+Epoch 14/64
+6250/6250 - 192s - total_loss: 0.4199 - forward_loss: 0.0726 - latent_loss: 0.0499 - rev_loss: 0.2973 - 192s/epoch - 31ms/step
+Epoch 15/64
+6250/6250 - 195s - total_loss: 0.4327 - forward_loss: 0.0806 - latent_loss: 0.0491 - rev_loss: 0.3030 - 195s/epoch - 31ms/step
+Epoch 16/64
+6250/6250 - 193s - total_loss: 0.4204 - forward_loss: 0.0794 - latent_loss: 0.0495 - rev_loss: 0.2915 - 193s/epoch - 31ms/step
+Epoch 17/64
+6250/6250 - 193s - total_loss: 0.4084 - forward_loss: 0.0768 - latent_loss: 0.0485 - rev_loss: 0.2831 - 193s/epoch - 31ms/step
+Epoch 18/64
+6250/6250 - 191s - total_loss: 0.4370 - forward_loss: 0.1046 - latent_loss: 0.0503 - rev_loss: 0.2821 - 191s/epoch - 31ms/step
+Epoch 19/64
+6250/6250 - 190s - total_loss: 0.4629 - forward_loss: 0.1242 - latent_loss: 0.0494 - rev_loss: 0.2893 - 190s/epoch - 30ms/step
+Epoch 20/64
+6250/6250 - 189s - total_loss: 0.5011 - forward_loss: 0.1568 - latent_loss: 0.0500 - rev_loss: 0.2943 - 189s/epoch - 30ms/step
+Epoch 21/64
+6250/6250 - 189s - total_loss: 0.4476 - forward_loss: 0.0995 - latent_loss: 0.0513 - rev_loss: 0.2969 - 189s/epoch - 30ms/step
+Epoch 22/64
+6250/6250 - 194s - total_loss: 0.5121 - forward_loss: 0.1687 - latent_loss: 0.0496 - rev_loss: 0.2938 - 194s/epoch - 31ms/step
+Epoch 23/64
+6250/6250 - 193s - total_loss: 0.4388 - forward_loss: 0.1069 - latent_loss: 0.0489 - rev_loss: 0.2830 - 193s/epoch - 31ms/step
+Epoch 24/64
+6250/6250 - 190s - total_loss: 0.4762 - forward_loss: 0.1418 - latent_loss: 0.0491 - rev_loss: 0.2853 - 190s/epoch - 30ms/step
+Epoch 25/64
+6250/6250 - 192s - total_loss: 0.4279 - forward_loss: 0.0800 - latent_loss: 0.0502 - rev_loss: 0.2977 - 192s/epoch - 31ms/step
+Epoch 26/64
+6250/6250 - 193s - total_loss: 0.4246 - forward_loss: 0.0933 - latent_loss: 0.0501 - rev_loss: 0.2812 - 193s/epoch - 31ms/step
+Epoch 27/64
+6250/6250 - 195s - total_loss: 0.4177 - forward_loss: 0.0744 - latent_loss: 0.0501 - rev_loss: 0.2932 - 195s/epoch - 31ms/step
+Epoch 28/64
+6250/6250 - 192s - total_loss: 0.4235 - forward_loss: 0.0901 - latent_loss: 0.0488 - rev_loss: 0.2846 - 192s/epoch - 31ms/step
+Epoch 29/64
+6250/6250 - 191s - total_loss: 0.4308 - forward_loss: 0.1050 - latent_loss: 0.0494 - rev_loss: 0.2764 - 191s/epoch - 31ms/step
+Epoch 30/64
+6250/6250 - 188s - total_loss: 0.3955 - forward_loss: 0.0773 - latent_loss: 0.0490 - rev_loss: 0.2693 - 188s/epoch - 30ms/step
+Epoch 31/64
+6250/6250 - 190s - total_loss: 0.4598 - forward_loss: 0.1103 - latent_loss: 0.0501 - rev_loss: 0.2995 - 190s/epoch - 30ms/step
+Epoch 32/64
+6250/6250 - 190s - total_loss: 0.4196 - forward_loss: 0.0828 - latent_loss: 0.0495 - rev_loss: 0.2874 - 190s/epoch - 30ms/step
+Epoch 33/64
+6250/6250 - 189s - total_loss: 0.4204 - forward_loss: 0.0822 - latent_loss: 0.0493 - rev_loss: 0.2889 - 189s/epoch - 30ms/step
+Epoch 34/64
+6250/6250 - 189s - total_loss: 0.3987 - forward_loss: 0.0852 - latent_loss: 0.0482 - rev_loss: 0.2652 - 189s/epoch - 30ms/step
+Epoch 35/64
+6250/6250 - 189s - total_loss: 0.5210 - forward_loss: 0.1672 - latent_loss: 0.0499 - rev_loss: 0.3039 - 189s/epoch - 30ms/step
+Epoch 36/64
+6250/6250 - 188s - total_loss: 0.4907 - forward_loss: 0.1353 - latent_loss: 0.0528 - rev_loss: 0.3025 - 188s/epoch - 30ms/step
+Epoch 37/64
+6250/6250 - 191s - total_loss: 0.3933 - forward_loss: 0.0722 - latent_loss: 0.0483 - rev_loss: 0.2727 - 191s/epoch - 31ms/step
+Epoch 38/64
+6250/6250 - 191s - total_loss: 0.4028 - forward_loss: 0.0758 - latent_loss: 0.0499 - rev_loss: 0.2771 - 191s/epoch - 31ms/step
+Epoch 39/64
+6250/6250 - 192s - total_loss: 0.4282 - forward_loss: 0.1014 - latent_loss: 0.0493 - rev_loss: 0.2776 - 192s/epoch - 31ms/step
+Epoch 40/64
+6250/6250 - 193s - total_loss: 0.4057 - forward_loss: 0.0857 - latent_loss: 0.0481 - rev_loss: 0.2719 - 193s/epoch - 31ms/step
+Epoch 41/64
+6250/6250 - 190s - total_loss: 0.3907 - forward_loss: 0.0721 - latent_loss: 0.0499 - rev_loss: 0.2687 - 190s/epoch - 30ms/step
+Epoch 42/64
+6250/6250 - 190s - total_loss: 0.4310 - forward_loss: 0.0990 - latent_loss: 0.0497 - rev_loss: 0.2822 - 190s/epoch - 30ms/step
+Epoch 43/64
+6250/6250 - 193s - total_loss: 0.4508 - forward_loss: 0.1126 - latent_loss: 0.0503 - rev_loss: 0.2880 - 193s/epoch - 31ms/step
+Epoch 44/64
+6250/6250 - 192s - total_loss: 0.4992 - forward_loss: 0.1582 - latent_loss: 0.0493 - rev_loss: 0.2917 - 192s/epoch - 31ms/step
+Epoch 45/64
+6250/6250 - 193s - total_loss: 0.4120 - forward_loss: 0.0781 - latent_loss: 0.0499 - rev_loss: 0.2839 - 193s/epoch - 31ms/step
+Epoch 46/64
+6250/6250 - 195s - total_loss: 0.4214 - forward_loss: 0.0834 - latent_loss: 0.0494 - rev_loss: 0.2886 - 195s/epoch - 31ms/step
+Epoch 47/64
+6250/6250 - 192s - total_loss: 0.3691 - forward_loss: 0.0692 - latent_loss: 0.0501 - rev_loss: 0.2499 - 192s/epoch - 31ms/step
+Epoch 48/64
+6250/6250 - 190s - total_loss: 0.4127 - forward_loss: 0.0786 - latent_loss: 0.0497 - rev_loss: 0.2845 - 190s/epoch - 30ms/step
+Epoch 49/64
+6250/6250 - 192s - total_loss: 0.4304 - forward_loss: 0.0978 - latent_loss: 0.0490 - rev_loss: 0.2835 - 192s/epoch - 31ms/step
+Epoch 50/64
+6250/6250 - 194s - total_loss: 0.3929 - forward_loss: 0.0734 - latent_loss: 0.0511 - rev_loss: 0.2684 - 194s/epoch - 31ms/step
+Epoch 51/64
+6250/6250 - 191s - total_loss: 0.4245 - forward_loss: 0.1008 - latent_loss: 0.0492 - rev_loss: 0.2745 - 191s/epoch - 31ms/step
+Epoch 52/64
+6250/6250 - 191s - total_loss: 0.4251 - forward_loss: 0.0972 - latent_loss: 0.0497 - rev_loss: 0.2783 - 191s/epoch - 31ms/step
+Epoch 53/64
+6250/6250 - 195s - total_loss: 0.3864 - forward_loss: 0.0632 - latent_loss: 0.0500 - rev_loss: 0.2733 - 195s/epoch - 31ms/step
+Epoch 54/64
+6250/6250 - 193s - total_loss: 0.4339 - forward_loss: 0.1074 - latent_loss: 0.0502 - rev_loss: 0.2763 - 193s/epoch - 31ms/step
+Epoch 55/64
+6250/6250 - 195s - total_loss: 0.4343 - forward_loss: 0.1043 - latent_loss: 0.0494 - rev_loss: 0.2806 - 195s/epoch - 31ms/step
+Epoch 56/64
+6250/6250 - 192s - total_loss: 0.4356 - forward_loss: 0.0890 - latent_loss: 0.0511 - rev_loss: 0.2955 - 192s/epoch - 31ms/step
+Epoch 57/64
+6250/6250 - 192s - total_loss: 0.4001 - forward_loss: 0.0740 - latent_loss: 0.0505 - rev_loss: 0.2756 - 192s/epoch - 31ms/step
+Epoch 58/64
+6250/6250 - 190s - total_loss: 0.3818 - forward_loss: 0.0564 - latent_loss: 0.0489 - rev_loss: 0.2765 - 190s/epoch - 30ms/step
+Epoch 59/64
+6250/6250 - 189s - total_loss: 0.4227 - forward_loss: 0.0877 - latent_loss: 0.0508 - rev_loss: 0.2843 - 189s/epoch - 30ms/step
+Epoch 60/64
+6250/6250 - 190s - total_loss: 0.4063 - forward_loss: 0.0634 - latent_loss: 0.0518 - rev_loss: 0.2911 - 190s/epoch - 30ms/step
+Epoch 61/64
+6250/6250 - 192s - total_loss: 0.4114 - forward_loss: 0.0837 - latent_loss: 0.0502 - rev_loss: 0.2775 - 192s/epoch - 31ms/step
+Epoch 62/64
+6250/6250 - 192s - total_loss: 0.4153 - forward_loss: 0.0847 - latent_loss: 0.0493 - rev_loss: 0.2813 - 192s/epoch - 31ms/step
+Epoch 63/64
+6250/6250 - 194s - total_loss: 0.4482 - forward_loss: 0.1464 - latent_loss: 0.0483 - rev_loss: 0.2534 - 194s/epoch - 31ms/step
+Epoch 64/64
+6250/6250 - 193s - total_loss: 0.4073 - forward_loss: 0.0758 - latent_loss: 0.0504 - rev_loss: 0.2812 - 193s/epoch - 31ms/step
+=== Time elapsed: 204.9288 min ===
+Pearson coeff: 0.644
+Pearson coeff: 0.488
+Pearson coeff: 0.928
