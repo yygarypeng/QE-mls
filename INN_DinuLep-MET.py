@@ -38,22 +38,26 @@ processor.load_files(path)
     Xi,
 ) = processor.files
 
-lep_kin = processor.process_lep(LepP, LepM)
-# print("lep_kin shape:", lep_kin.shape)
-# print(lep_kin.head(5), end="\n")
-
 # observed (Y)
+# lep
+lep_kin = processor.process_lep(LepP, LepM)
+# MET
 MET_kin = processor.process_MET(MET).iloc[:, 1:3]
+
+# y -> observed params
 MET_kin = pd.concat([MET_kin, lep_kin], axis=1)
 print("MET_kin shape:", MET_kin.shape)
 print(MET_kin.head(3))
 
 # interest (X)
-dinu_kin = processor.process_dinu(NuP, NuM)
-# print("dinu_kin shape:", dinu_kin.shape)
-# print(dinu_kin.head(5), end="\n")
+# nu (sperated)
+nu_p = processor.process_nu(NuP)
+nu_m = processor.process_nu(NuM)
+# CGLMP.
+Bij = processor.process_CGLMP(CGLMP)
 
-dinu_kin = pd.concat([dinu_kin, lep_kin], axis=1)
+# x -> interested unknowns
+dinu_kin = pd.concat([nu_p, nu_m, Bij], axis=1)
 print("dinu_kin shape:", dinu_kin.shape)
 print(dinu_kin.head(3))
 print()
@@ -87,10 +91,12 @@ from sklearn.preprocessing import StandardScaler
 SCALAR_int = StandardScaler()
 norm_var = SCALAR_int.fit_transform(dinu_kin)
 dinu_kin = norm_var
+print(f"mean: {dinu_kin.mean()}; std: {dinu_kin.std()}")
 
 SCALAR_MET = StandardScaler()
 norm_var = SCALAR_MET.fit_transform(MET_kin)
 MET_kin = norm_var
+print(f"mean: {MET_kin.mean()}; std: {MET_kin.std()}")
 
 del norm_var
 
@@ -127,8 +133,8 @@ x_dim = train_x.shape[1]
 y_dim = train_y.shape[1]
 
 # * hyperparameter
-# z_dim = x_dim - y_dim
-z_dim = 8
+z_dim = x_dim - y_dim + 1  # we only take intrinsic dimension into account
+# z_dim = 8
 
 tot_dim = y_dim + z_dim
 pad_dim = tot_dim - x_dim
@@ -138,6 +144,7 @@ pad_dim = tot_dim - x_dim
 X = train_x.reshape((-1, x_dim))
 # print("pad_dim", pad_dim)
 pad_x = np.zeros((X.shape[0], pad_dim))
+print("pad_x", pad_x.shape)
 # print("pad_x", pad_x.shape)
 x = np.concatenate([X, pad_x], axis=-1).astype("float32")
 print("x", x.shape)
@@ -156,13 +163,13 @@ n_sample = X.shape[0]
 n_data = n_sample * train_y.shape[1]
 
 # * hyperparameter
-n_couple_layer = 3
+n_couple_layer = 5
 n_hid_layer = 3
 n_hid_dim = 32
 
 # * hyperparameter
-n_batch = 256
-n_epoch = 64
+n_batch = 128
+n_epoch = 32
 n_display = n_batch
 
 # Make dataset generator
@@ -270,7 +277,7 @@ class Trainer(tfk.Model):
 trainer = Trainer(
     model, x_dim, y_dim, z_dim, tot_dim, n_couple_layer, n_hid_layer, n_hid_dim
 )
-trainer.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3))
+trainer.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=1e-4))
 
 # %% [markdown]
 # Training
@@ -307,12 +314,18 @@ plt.close()
 z = np.random.multivariate_normal([1.0] * z_dim, np.eye(z_dim), test_y.shape[0])
 y = np.concatenate([z, test_y], axis=-1).astype("float32")
 x_pred = model.inverse(y).numpy()
-pz_pred = x_pred[:, 3]
-pt_pred = np.sqrt(np.square(x_pred[:, 1]) + np.square(x_pred[:, 2]))
-E_pred = x_pred[:, 0]
-pz_truth = test_x[:, 3]
-pt_truth = np.sqrt(np.square(test_x[:, 1]) + np.square(test_x[:, 2]))
-E_truth = test_x[:, 0]
+
+pz_pred = x_pred[:, 3] + x_pred[:, 7]
+pt_pred = np.sqrt(
+    np.square(x_pred[:, 1] + x_pred[:, 5]) + np.square(x_pred[:, 2] + x_pred[:, 6])
+)
+E_pred = x_pred[:, 0] + x_pred[:, 4]
+
+pz_truth = test_x[:, 3] + test_x[:, 7]
+pt_truth = np.sqrt(
+    np.square(test_x[:, 1] + test_x[:, 5]) + np.square(test_x[:, 2] + test_x[:, 6])
+)
+E_truth = test_x[:, 0] + test_x[:, 4]
 
 
 # %%

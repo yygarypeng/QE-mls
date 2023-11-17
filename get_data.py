@@ -84,6 +84,22 @@ class DataProcessor:
         nu_kin.drop(self.RMV_EVT, inplace=True)
         return nu_kin
 
+    def process_nu(self, Nu):
+        # Kinemetic info of neutirnos.
+        nu_kin = (
+            pd.DataFrame(
+                {
+                    "nu_E": Nu["E"],
+                    "nu_px": Nu["px"],
+                    "nu_py": Nu["py"],
+                    "nu_pz": Nu["pz"],
+                }
+            )
+            / self.GEV
+        )
+        nu_kin.drop(self.RMV_EVT, inplace=True)
+        return nu_kin
+
     def process_CGLMP(self, CGLMP):
         CGLMP = pd.DataFrame(
             {
