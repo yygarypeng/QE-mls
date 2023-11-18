@@ -39,9 +39,9 @@ processor.load_files(path)
 ) = processor.files
 
 # observed (Y)
-## lep
+# lep
 lep_kin = processor.process_lep(LepP, LepM)
-## MET
+# MET
 MET_kin = processor.process_MET(MET).iloc[:, 1:3]
 
 # y -> observed params
@@ -50,10 +50,10 @@ print("MET_kin shape:", MET_kin.shape)
 print(MET_kin.head(3))
 
 # interest (X)
-## nu (sperated)
+# nu (sperated)
 nu_p = processor.process_nu(NuP)
 nu_m = processor.process_nu(NuM)
-## CGLMP.
+# CGLMP.
 Bij = processor.process_CGLMP(CGLMP)
 
 # x -> interested unknowns
@@ -314,7 +314,7 @@ plt.close()
 z = np.random.multivariate_normal([1.0] * z_dim, np.eye(z_dim), test_y.shape[0])
 y = np.concatenate([z, test_y], axis=-1).astype("float32")
 x_pred = model.inverse(y).numpy()
-print(x_pred[3])
+
 pz_pred = x_pred[:, 3] + x_pred[:, 7]
 pt_pred = np.sqrt(
     np.square(x_pred[:, 1] + x_pred[:, 5]) + np.square(x_pred[:, 2] + x_pred[:, 6])

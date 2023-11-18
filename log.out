@@ -10,181 +10,179 @@ MET_kin shape: (2928862, 10)
 2   -4.344014 -53.593527   94.193734  ...   7.589698   1.677931  25.090863
 
 [3 rows x 10 columns]
-dinu_kin shape: (2928862, 12)
-         nu_E       nu_px      nu_py  ...   lep_m_px   lep_m_py   lep_m_pz
-0  122.129977   21.531590  58.661363  ...  11.081455   2.673936  -3.847299
-1  611.032109  142.831582 -36.235636  ... -13.096559  14.755815  63.403242
-2   74.715202   -4.118662 -52.749777  ...   7.589698   1.677931  25.090863
+dinu_kin shape: (2928862, 11)
+         nu_E      nu_px      nu_py  ...      Bxy        Byz       Bzx
+0   75.449547  -5.933027  30.212092  ...  5.37961  -0.375224   8.00803
+1  226.696359  59.309223 -25.300893  ... -4.33158  15.150000  -5.99553
+2    8.372312  -7.214337  -4.222511  ...  4.61210  21.715400  19.46050
 
-[3 rows x 12 columns]
+[3 rows x 11 columns]
 
+mean: 7.154943838729907e-18; std: 1.000000000000001
+mean: 6.080290770393208e-18; std: 0.999999999999999
 X (Interest)
-Training data shape: (80000, 12);
-Testing data shape: (20000, 12).
+Training data shape: (8000, 11);
+Testing data shape: (2000, 11).
 Y (Observed)
-Training data shape: (80000, 10);
-Testing data shape: (20000, 10).
+Training data shape: (8000, 10);
+Testing data shape: (2000, 10).
 
-x (80000, 18)
-y (80000, 10)
-z (80000, 8)
-Input dataset shape -> X:(80000, 18), Y: (80000, 18)
+pad_x (8000, 1)
+x (8000, 12)
+y (8000, 10)
+z (8000, 2)
+Input dataset shape -> X:(8000, 12), Y: (8000, 12)
 
 Model: "NVP"
 _________________________________________________________________
  Layer (type)                Output Shape              Param #   
 =================================================================
- Layer0 (TwoNVPCouplingLaye  multiple                  6070      
+ Layer0 (TwoNVPCouplingLaye  multiple                  19108     
  rs)                                                             
                                                                  
- Layer1 (TwoNVPCouplingLaye  multiple                  6070      
+ Layer1 (TwoNVPCouplingLaye  multiple                  19108     
  rs)                                                             
                                                                  
- Layer2 (TwoNVPCouplingLaye  multiple                  6070      
- rs)                                                             
-                                                                 
- Layer3 (TwoNVPCouplingLaye  multiple                  6070      
- rs)                                                             
-                                                                 
- Layer4 (TwoNVPCouplingLaye  multiple                  6070      
+ Layer2 (TwoNVPCouplingLaye  multiple                  19108     
  rs)                                                             
                                                                  
 =================================================================
-Total params: 30350 (118.91 KB)
-Trainable params: 30260 (118.20 KB)
-Non-trainable params: 90 (720.00 Byte)
+Total params: 57324 (224.06 KB)
+Trainable params: 57288 (223.78 KB)
+Non-trainable params: 36 (288.00 Byte)
 _________________________________________________________________
-=== Started at 2023-11-10 08h:15m:32s ===
+=== Started at 2023-11-17 14h:06m:13s ===
 Epoch 1/64
- 2023-11-10 08h:19m:05s | Epoch: 01/64 | total_loss=0.705539 forward_loss=0.165570 latent_loss=0.059869 rev_loss=0.480100
-6250/6250 - 213s - total_loss: 0.7055 - forward_loss: 0.1656 - latent_loss: 0.0599 - rev_loss: 0.4801 - 213s/epoch - 34ms/step
+ 2023-11-17 14h:07m:14s | Epoch: 01/64 | total_loss=5.868633 forward_loss=5.089028 latent_loss=0.068535 rev_loss=0.711070
+625/625 - 61s - total_loss: 5.8686 - forward_loss: 5.0890 - latent_loss: 0.0685 - rev_loss: 0.7111 - 61s/epoch - 97ms/step
 Epoch 2/64
-6250/6250 - 190s - total_loss: 0.4857 - forward_loss: 0.0845 - latent_loss: 0.0497 - rev_loss: 0.3515 - 190s/epoch - 30ms/step
+625/625 - 37s - total_loss: 3.6727 - forward_loss: 3.0162 - latent_loss: 0.0675 - rev_loss: 0.5890 - 37s/epoch - 59ms/step
 Epoch 3/64
-6250/6250 - 193s - total_loss: 0.4244 - forward_loss: 0.0622 - latent_loss: 0.0496 - rev_loss: 0.3126 - 193s/epoch - 31ms/step
+625/625 - 41s - total_loss: 5.1980 - forward_loss: 4.5612 - latent_loss: 0.0763 - rev_loss: 0.5604 - 41s/epoch - 66ms/step
 Epoch 4/64
-6250/6250 - 193s - total_loss: 0.5012 - forward_loss: 0.1267 - latent_loss: 0.0510 - rev_loss: 0.3235 - 193s/epoch - 31ms/step
+625/625 - 39s - total_loss: 3.5833 - forward_loss: 2.9482 - latent_loss: 0.0792 - rev_loss: 0.5559 - 39s/epoch - 63ms/step
 Epoch 5/64
-6250/6250 - 190s - total_loss: 0.5256 - forward_loss: 0.1373 - latent_loss: 0.0504 - rev_loss: 0.3379 - 190s/epoch - 30ms/step
+625/625 - 41s - total_loss: 3.3964 - forward_loss: 2.7965 - latent_loss: 0.0791 - rev_loss: 0.5209 - 41s/epoch - 65ms/step
 Epoch 6/64
-6250/6250 - 191s - total_loss: 0.5123 - forward_loss: 0.1596 - latent_loss: 0.0504 - rev_loss: 0.3024 - 191s/epoch - 31ms/step
+625/625 - 37s - total_loss: 4.3051 - forward_loss: 3.7216 - latent_loss: 0.0749 - rev_loss: 0.5086 - 37s/epoch - 58ms/step
 Epoch 7/64
-6250/6250 - 192s - total_loss: 0.4588 - forward_loss: 0.1077 - latent_loss: 0.0492 - rev_loss: 0.3019 - 192s/epoch - 31ms/step
+625/625 - 35s - total_loss: 3.2155 - forward_loss: 2.6548 - latent_loss: 0.0728 - rev_loss: 0.4879 - 35s/epoch - 56ms/step
 Epoch 8/64
-6250/6250 - 195s - total_loss: 0.4475 - forward_loss: 0.0764 - latent_loss: 0.0493 - rev_loss: 0.3218 - 195s/epoch - 31ms/step
+625/625 - 36s - total_loss: 2.8651 - forward_loss: 2.3095 - latent_loss: 0.0713 - rev_loss: 0.4843 - 36s/epoch - 57ms/step
 Epoch 9/64
-6250/6250 - 194s - total_loss: 0.4192 - forward_loss: 0.0760 - latent_loss: 0.0491 - rev_loss: 0.2941 - 194s/epoch - 31ms/step
+625/625 - 36s - total_loss: 6.2716 - forward_loss: 5.6973 - latent_loss: 0.0671 - rev_loss: 0.5072 - 36s/epoch - 58ms/step
 Epoch 10/64
-6250/6250 - 193s - total_loss: 0.3970 - forward_loss: 0.0708 - latent_loss: 0.0489 - rev_loss: 0.2774 - 193s/epoch - 31ms/step
+625/625 - 31s - total_loss: 3.2812 - forward_loss: 2.7205 - latent_loss: 0.0688 - rev_loss: 0.4919 - 31s/epoch - 50ms/step
 Epoch 11/64
-6250/6250 - 193s - total_loss: 0.4923 - forward_loss: 0.1477 - latent_loss: 0.0485 - rev_loss: 0.2961 - 193s/epoch - 31ms/step
+625/625 - 39s - total_loss: 4.9786 - forward_loss: 4.4248 - latent_loss: 0.0704 - rev_loss: 0.4834 - 39s/epoch - 62ms/step
 Epoch 12/64
-6250/6250 - 192s - total_loss: 0.4695 - forward_loss: 0.1373 - latent_loss: 0.0490 - rev_loss: 0.2832 - 192s/epoch - 31ms/step
+625/625 - 32s - total_loss: 3.2925 - forward_loss: 2.7425 - latent_loss: 0.0677 - rev_loss: 0.4823 - 32s/epoch - 51ms/step
 Epoch 13/64
-6250/6250 - 191s - total_loss: 0.4201 - forward_loss: 0.0639 - latent_loss: 0.0495 - rev_loss: 0.3067 - 191s/epoch - 31ms/step
+625/625 - 30s - total_loss: 3.5507 - forward_loss: 2.9803 - latent_loss: 0.0699 - rev_loss: 0.5005 - 30s/epoch - 48ms/step
 Epoch 14/64
-6250/6250 - 192s - total_loss: 0.4199 - forward_loss: 0.0726 - latent_loss: 0.0499 - rev_loss: 0.2973 - 192s/epoch - 31ms/step
+625/625 - 31s - total_loss: 2.8343 - forward_loss: 2.2823 - latent_loss: 0.0654 - rev_loss: 0.4866 - 31s/epoch - 50ms/step
 Epoch 15/64
-6250/6250 - 195s - total_loss: 0.4327 - forward_loss: 0.0806 - latent_loss: 0.0491 - rev_loss: 0.3030 - 195s/epoch - 31ms/step
+625/625 - 36s - total_loss: 3.5951 - forward_loss: 3.0374 - latent_loss: 0.0728 - rev_loss: 0.4848 - 36s/epoch - 57ms/step
 Epoch 16/64
-6250/6250 - 193s - total_loss: 0.4204 - forward_loss: 0.0794 - latent_loss: 0.0495 - rev_loss: 0.2915 - 193s/epoch - 31ms/step
+625/625 - 34s - total_loss: 3.3375 - forward_loss: 2.7995 - latent_loss: 0.0689 - rev_loss: 0.4691 - 34s/epoch - 55ms/step
 Epoch 17/64
-6250/6250 - 193s - total_loss: 0.4084 - forward_loss: 0.0768 - latent_loss: 0.0485 - rev_loss: 0.2831 - 193s/epoch - 31ms/step
+625/625 - 35s - total_loss: 3.3234 - forward_loss: 2.7713 - latent_loss: 0.0686 - rev_loss: 0.4836 - 35s/epoch - 56ms/step
 Epoch 18/64
-6250/6250 - 191s - total_loss: 0.4370 - forward_loss: 0.1046 - latent_loss: 0.0503 - rev_loss: 0.2821 - 191s/epoch - 31ms/step
+625/625 - 33s - total_loss: 3.3082 - forward_loss: 2.7607 - latent_loss: 0.0640 - rev_loss: 0.4835 - 33s/epoch - 53ms/step
 Epoch 19/64
-6250/6250 - 190s - total_loss: 0.4629 - forward_loss: 0.1242 - latent_loss: 0.0494 - rev_loss: 0.2893 - 190s/epoch - 30ms/step
+625/625 - 36s - total_loss: 3.1380 - forward_loss: 2.5670 - latent_loss: 0.0697 - rev_loss: 0.5012 - 36s/epoch - 58ms/step
 Epoch 20/64
-6250/6250 - 189s - total_loss: 0.5011 - forward_loss: 0.1568 - latent_loss: 0.0500 - rev_loss: 0.2943 - 189s/epoch - 30ms/step
+625/625 - 35s - total_loss: 4.9944 - forward_loss: 4.4474 - latent_loss: 0.0645 - rev_loss: 0.4825 - 35s/epoch - 55ms/step
 Epoch 21/64
-6250/6250 - 189s - total_loss: 0.4476 - forward_loss: 0.0995 - latent_loss: 0.0513 - rev_loss: 0.2969 - 189s/epoch - 30ms/step
+625/625 - 26s - total_loss: 5.0390 - forward_loss: 4.4986 - latent_loss: 0.0642 - rev_loss: 0.4761 - 26s/epoch - 42ms/step
 Epoch 22/64
-6250/6250 - 194s - total_loss: 0.5121 - forward_loss: 0.1687 - latent_loss: 0.0496 - rev_loss: 0.2938 - 194s/epoch - 31ms/step
+625/625 - 36s - total_loss: 4.1954 - forward_loss: 3.6304 - latent_loss: 0.0675 - rev_loss: 0.4975 - 36s/epoch - 58ms/step
 Epoch 23/64
-6250/6250 - 193s - total_loss: 0.4388 - forward_loss: 0.1069 - latent_loss: 0.0489 - rev_loss: 0.2830 - 193s/epoch - 31ms/step
+625/625 - 30s - total_loss: 3.2783 - forward_loss: 2.7242 - latent_loss: 0.0663 - rev_loss: 0.4877 - 30s/epoch - 48ms/step
 Epoch 24/64
-6250/6250 - 190s - total_loss: 0.4762 - forward_loss: 0.1418 - latent_loss: 0.0491 - rev_loss: 0.2853 - 190s/epoch - 30ms/step
+625/625 - 27s - total_loss: 2.7921 - forward_loss: 2.2339 - latent_loss: 0.0676 - rev_loss: 0.4906 - 27s/epoch - 44ms/step
 Epoch 25/64
-6250/6250 - 192s - total_loss: 0.4279 - forward_loss: 0.0800 - latent_loss: 0.0502 - rev_loss: 0.2977 - 192s/epoch - 31ms/step
+625/625 - 35s - total_loss: 3.5153 - forward_loss: 2.9787 - latent_loss: 0.0670 - rev_loss: 0.4695 - 35s/epoch - 56ms/step
 Epoch 26/64
-6250/6250 - 193s - total_loss: 0.4246 - forward_loss: 0.0933 - latent_loss: 0.0501 - rev_loss: 0.2812 - 193s/epoch - 31ms/step
+625/625 - 36s - total_loss: 3.2095 - forward_loss: 2.6501 - latent_loss: 0.0684 - rev_loss: 0.4910 - 36s/epoch - 58ms/step
 Epoch 27/64
-6250/6250 - 195s - total_loss: 0.4177 - forward_loss: 0.0744 - latent_loss: 0.0501 - rev_loss: 0.2932 - 195s/epoch - 31ms/step
+625/625 - 31s - total_loss: 3.2764 - forward_loss: 2.7342 - latent_loss: 0.0626 - rev_loss: 0.4796 - 31s/epoch - 50ms/step
 Epoch 28/64
-6250/6250 - 192s - total_loss: 0.4235 - forward_loss: 0.0901 - latent_loss: 0.0488 - rev_loss: 0.2846 - 192s/epoch - 31ms/step
+625/625 - 29s - total_loss: 3.2218 - forward_loss: 2.6737 - latent_loss: 0.0677 - rev_loss: 0.4804 - 29s/epoch - 46ms/step
 Epoch 29/64
-6250/6250 - 191s - total_loss: 0.4308 - forward_loss: 0.1050 - latent_loss: 0.0494 - rev_loss: 0.2764 - 191s/epoch - 31ms/step
+625/625 - 31s - total_loss: 3.5536 - forward_loss: 3.0102 - latent_loss: 0.0655 - rev_loss: 0.4779 - 31s/epoch - 50ms/step
 Epoch 30/64
-6250/6250 - 188s - total_loss: 0.3955 - forward_loss: 0.0773 - latent_loss: 0.0490 - rev_loss: 0.2693 - 188s/epoch - 30ms/step
+625/625 - 31s - total_loss: 4.7460 - forward_loss: 4.1837 - latent_loss: 0.0661 - rev_loss: 0.4961 - 31s/epoch - 49ms/step
 Epoch 31/64
-6250/6250 - 190s - total_loss: 0.4598 - forward_loss: 0.1103 - latent_loss: 0.0501 - rev_loss: 0.2995 - 190s/epoch - 30ms/step
+625/625 - 34s - total_loss: 3.7468 - forward_loss: 3.2137 - latent_loss: 0.0660 - rev_loss: 0.4672 - 34s/epoch - 54ms/step
 Epoch 32/64
-6250/6250 - 190s - total_loss: 0.4196 - forward_loss: 0.0828 - latent_loss: 0.0495 - rev_loss: 0.2874 - 190s/epoch - 30ms/step
+625/625 - 33s - total_loss: 4.1906 - forward_loss: 3.6451 - latent_loss: 0.0673 - rev_loss: 0.4783 - 33s/epoch - 54ms/step
 Epoch 33/64
-6250/6250 - 189s - total_loss: 0.4204 - forward_loss: 0.0822 - latent_loss: 0.0493 - rev_loss: 0.2889 - 189s/epoch - 30ms/step
+625/625 - 32s - total_loss: 2.9450 - forward_loss: 2.3826 - latent_loss: 0.0710 - rev_loss: 0.4914 - 32s/epoch - 51ms/step
 Epoch 34/64
-6250/6250 - 189s - total_loss: 0.3987 - forward_loss: 0.0852 - latent_loss: 0.0482 - rev_loss: 0.2652 - 189s/epoch - 30ms/step
+625/625 - 31s - total_loss: 4.9165 - forward_loss: 4.3725 - latent_loss: 0.0677 - rev_loss: 0.4763 - 31s/epoch - 49ms/step
 Epoch 35/64
-6250/6250 - 189s - total_loss: 0.5210 - forward_loss: 0.1672 - latent_loss: 0.0499 - rev_loss: 0.3039 - 189s/epoch - 30ms/step
+625/625 - 30s - total_loss: 3.2074 - forward_loss: 2.6629 - latent_loss: 0.0655 - rev_loss: 0.4790 - 30s/epoch - 47ms/step
 Epoch 36/64
-6250/6250 - 188s - total_loss: 0.4907 - forward_loss: 0.1353 - latent_loss: 0.0528 - rev_loss: 0.3025 - 188s/epoch - 30ms/step
+625/625 - 31s - total_loss: 3.5349 - forward_loss: 2.9920 - latent_loss: 0.0626 - rev_loss: 0.4803 - 31s/epoch - 49ms/step
 Epoch 37/64
-6250/6250 - 191s - total_loss: 0.3933 - forward_loss: 0.0722 - latent_loss: 0.0483 - rev_loss: 0.2727 - 191s/epoch - 31ms/step
+625/625 - 32s - total_loss: 3.1396 - forward_loss: 2.5884 - latent_loss: 0.0618 - rev_loss: 0.4894 - 32s/epoch - 51ms/step
 Epoch 38/64
-6250/6250 - 191s - total_loss: 0.4028 - forward_loss: 0.0758 - latent_loss: 0.0499 - rev_loss: 0.2771 - 191s/epoch - 31ms/step
+625/625 - 32s - total_loss: 3.8275 - forward_loss: 3.2806 - latent_loss: 0.0631 - rev_loss: 0.4837 - 32s/epoch - 52ms/step
 Epoch 39/64
-6250/6250 - 192s - total_loss: 0.4282 - forward_loss: 0.1014 - latent_loss: 0.0493 - rev_loss: 0.2776 - 192s/epoch - 31ms/step
+625/625 - 32s - total_loss: 2.9303 - forward_loss: 2.3896 - latent_loss: 0.0664 - rev_loss: 0.4743 - 32s/epoch - 52ms/step
 Epoch 40/64
-6250/6250 - 193s - total_loss: 0.4057 - forward_loss: 0.0857 - latent_loss: 0.0481 - rev_loss: 0.2719 - 193s/epoch - 31ms/step
+625/625 - 35s - total_loss: 3.1023 - forward_loss: 2.5602 - latent_loss: 0.0691 - rev_loss: 0.4729 - 35s/epoch - 56ms/step
 Epoch 41/64
-6250/6250 - 190s - total_loss: 0.3907 - forward_loss: 0.0721 - latent_loss: 0.0499 - rev_loss: 0.2687 - 190s/epoch - 30ms/step
+625/625 - 31s - total_loss: 2.9713 - forward_loss: 2.4322 - latent_loss: 0.0631 - rev_loss: 0.4760 - 31s/epoch - 49ms/step
 Epoch 42/64
-6250/6250 - 190s - total_loss: 0.4310 - forward_loss: 0.0990 - latent_loss: 0.0497 - rev_loss: 0.2822 - 190s/epoch - 30ms/step
+625/625 - 33s - total_loss: 3.4805 - forward_loss: 2.9308 - latent_loss: 0.0638 - rev_loss: 0.4860 - 33s/epoch - 53ms/step
 Epoch 43/64
-6250/6250 - 193s - total_loss: 0.4508 - forward_loss: 0.1126 - latent_loss: 0.0503 - rev_loss: 0.2880 - 193s/epoch - 31ms/step
+625/625 - 33s - total_loss: 3.3032 - forward_loss: 2.7575 - latent_loss: 0.0652 - rev_loss: 0.4805 - 33s/epoch - 53ms/step
 Epoch 44/64
-6250/6250 - 192s - total_loss: 0.4992 - forward_loss: 0.1582 - latent_loss: 0.0493 - rev_loss: 0.2917 - 192s/epoch - 31ms/step
+625/625 - 29s - total_loss: 3.5305 - forward_loss: 2.9736 - latent_loss: 0.0626 - rev_loss: 0.4942 - 29s/epoch - 46ms/step
 Epoch 45/64
-6250/6250 - 193s - total_loss: 0.4120 - forward_loss: 0.0781 - latent_loss: 0.0499 - rev_loss: 0.2839 - 193s/epoch - 31ms/step
+625/625 - 28s - total_loss: 4.6268 - forward_loss: 4.0765 - latent_loss: 0.0646 - rev_loss: 0.4857 - 28s/epoch - 45ms/step
 Epoch 46/64
-6250/6250 - 195s - total_loss: 0.4214 - forward_loss: 0.0834 - latent_loss: 0.0494 - rev_loss: 0.2886 - 195s/epoch - 31ms/step
+625/625 - 26s - total_loss: 3.2096 - forward_loss: 2.6648 - latent_loss: 0.0665 - rev_loss: 0.4783 - 26s/epoch - 41ms/step
 Epoch 47/64
-6250/6250 - 192s - total_loss: 0.3691 - forward_loss: 0.0692 - latent_loss: 0.0501 - rev_loss: 0.2499 - 192s/epoch - 31ms/step
+625/625 - 27s - total_loss: 2.9123 - forward_loss: 2.3730 - latent_loss: 0.0635 - rev_loss: 0.4758 - 27s/epoch - 43ms/step
 Epoch 48/64
-6250/6250 - 190s - total_loss: 0.4127 - forward_loss: 0.0786 - latent_loss: 0.0497 - rev_loss: 0.2845 - 190s/epoch - 30ms/step
+625/625 - 31s - total_loss: 3.2212 - forward_loss: 2.6831 - latent_loss: 0.0634 - rev_loss: 0.4747 - 31s/epoch - 49ms/step
 Epoch 49/64
-6250/6250 - 192s - total_loss: 0.4304 - forward_loss: 0.0978 - latent_loss: 0.0490 - rev_loss: 0.2835 - 192s/epoch - 31ms/step
+625/625 - 25s - total_loss: 3.0980 - forward_loss: 2.5537 - latent_loss: 0.0648 - rev_loss: 0.4795 - 25s/epoch - 39ms/step
 Epoch 50/64
-6250/6250 - 194s - total_loss: 0.3929 - forward_loss: 0.0734 - latent_loss: 0.0511 - rev_loss: 0.2684 - 194s/epoch - 31ms/step
+625/625 - 25s - total_loss: 3.6851 - forward_loss: 3.1488 - latent_loss: 0.0617 - rev_loss: 0.4745 - 25s/epoch - 39ms/step
 Epoch 51/64
-6250/6250 - 191s - total_loss: 0.4245 - forward_loss: 0.1008 - latent_loss: 0.0492 - rev_loss: 0.2745 - 191s/epoch - 31ms/step
+625/625 - 30s - total_loss: 3.3666 - forward_loss: 2.8282 - latent_loss: 0.0625 - rev_loss: 0.4759 - 30s/epoch - 48ms/step
 Epoch 52/64
-6250/6250 - 191s - total_loss: 0.4251 - forward_loss: 0.0972 - latent_loss: 0.0497 - rev_loss: 0.2783 - 191s/epoch - 31ms/step
+625/625 - 36s - total_loss: 2.5786 - forward_loss: 2.0406 - latent_loss: 0.0652 - rev_loss: 0.4728 - 36s/epoch - 58ms/step
 Epoch 53/64
-6250/6250 - 195s - total_loss: 0.3864 - forward_loss: 0.0632 - latent_loss: 0.0500 - rev_loss: 0.2733 - 195s/epoch - 31ms/step
+625/625 - 27s - total_loss: 4.0481 - forward_loss: 3.4972 - latent_loss: 0.0652 - rev_loss: 0.4858 - 27s/epoch - 44ms/step
 Epoch 54/64
-6250/6250 - 193s - total_loss: 0.4339 - forward_loss: 0.1074 - latent_loss: 0.0502 - rev_loss: 0.2763 - 193s/epoch - 31ms/step
+625/625 - 33s - total_loss: 3.6531 - forward_loss: 3.1169 - latent_loss: 0.0606 - rev_loss: 0.4756 - 33s/epoch - 52ms/step
 Epoch 55/64
-6250/6250 - 195s - total_loss: 0.4343 - forward_loss: 0.1043 - latent_loss: 0.0494 - rev_loss: 0.2806 - 195s/epoch - 31ms/step
+625/625 - 21s - total_loss: 2.8623 - forward_loss: 2.3126 - latent_loss: 0.0666 - rev_loss: 0.4831 - 21s/epoch - 33ms/step
 Epoch 56/64
-6250/6250 - 192s - total_loss: 0.4356 - forward_loss: 0.0890 - latent_loss: 0.0511 - rev_loss: 0.2955 - 192s/epoch - 31ms/step
+625/625 - 28s - total_loss: 2.9741 - forward_loss: 2.4261 - latent_loss: 0.0691 - rev_loss: 0.4789 - 28s/epoch - 45ms/step
 Epoch 57/64
-6250/6250 - 192s - total_loss: 0.4001 - forward_loss: 0.0740 - latent_loss: 0.0505 - rev_loss: 0.2756 - 192s/epoch - 31ms/step
+625/625 - 32s - total_loss: 3.7166 - forward_loss: 3.1713 - latent_loss: 0.0637 - rev_loss: 0.4816 - 32s/epoch - 52ms/step
 Epoch 58/64
-6250/6250 - 190s - total_loss: 0.3818 - forward_loss: 0.0564 - latent_loss: 0.0489 - rev_loss: 0.2765 - 190s/epoch - 30ms/step
+625/625 - 28s - total_loss: 3.1143 - forward_loss: 2.5425 - latent_loss: 0.0663 - rev_loss: 0.5055 - 28s/epoch - 44ms/step
 Epoch 59/64
-6250/6250 - 189s - total_loss: 0.4227 - forward_loss: 0.0877 - latent_loss: 0.0508 - rev_loss: 0.2843 - 189s/epoch - 30ms/step
+625/625 - 29s - total_loss: 3.6769 - forward_loss: 3.1389 - latent_loss: 0.0610 - rev_loss: 0.4769 - 29s/epoch - 46ms/step
 Epoch 60/64
-6250/6250 - 190s - total_loss: 0.4063 - forward_loss: 0.0634 - latent_loss: 0.0518 - rev_loss: 0.2911 - 190s/epoch - 30ms/step
+625/625 - 34s - total_loss: 3.9311 - forward_loss: 3.3897 - latent_loss: 0.0600 - rev_loss: 0.4813 - 34s/epoch - 54ms/step
 Epoch 61/64
-6250/6250 - 192s - total_loss: 0.4114 - forward_loss: 0.0837 - latent_loss: 0.0502 - rev_loss: 0.2775 - 192s/epoch - 31ms/step
+625/625 - 31s - total_loss: 3.6777 - forward_loss: 3.1280 - latent_loss: 0.0633 - rev_loss: 0.4865 - 31s/epoch - 50ms/step
 Epoch 62/64
-6250/6250 - 192s - total_loss: 0.4153 - forward_loss: 0.0847 - latent_loss: 0.0493 - rev_loss: 0.2813 - 192s/epoch - 31ms/step
+625/625 - 30s - total_loss: 2.9935 - forward_loss: 2.4443 - latent_loss: 0.0663 - rev_loss: 0.4830 - 30s/epoch - 49ms/step
 Epoch 63/64
-6250/6250 - 194s - total_loss: 0.4482 - forward_loss: 0.1464 - latent_loss: 0.0483 - rev_loss: 0.2534 - 194s/epoch - 31ms/step
+625/625 - 29s - total_loss: 2.9110 - forward_loss: 2.3733 - latent_loss: 0.0625 - rev_loss: 0.4752 - 29s/epoch - 46ms/step
 Epoch 64/64
-6250/6250 - 193s - total_loss: 0.4073 - forward_loss: 0.0758 - latent_loss: 0.0504 - rev_loss: 0.2812 - 193s/epoch - 31ms/step
-=== Time elapsed: 204.9288 min ===
-Pearson coeff: 0.644
-Pearson coeff: 0.488
-Pearson coeff: 0.928
+625/625 - 28s - total_loss: 2.8643 - forward_loss: 2.3326 - latent_loss: 0.0660 - rev_loss: 0.4657 - 28s/epoch - 45ms/step
+=== Time elapsed: 34.5659 min ===
+pz -> Pearson coeff: 0.206
+E  -> Pearson coeff: -0.054
+pt -> Pearson coeff: 0.279
+====================== Finished!! ======================
