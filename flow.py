@@ -18,14 +18,16 @@ class NN(tfkl.Layer):
     Reused from https://github.com/MokkeMeguru/glow-realnvp-tutorial
     """
 
-    def __init__(self, n_dim, n_layer=3, n_hid=512, activation="relu", name="fc_layer"):
+    def __init__(self, n_dim, n_layer=3, n_hid=512, activation="elu", name="fc_layer"):
         super(NN, self).__init__(name=name)
         self.n_dim = n_dim
         self.n_layer = n_layer
         self.n_hid = n_hid
         self.layer_list = []
-        for _ in range(n_layer):
-            self.layer_list.append(tfkl.Dense(n_hid, activation=activation))
+        for i in range(n_layer):
+            self.layer_list.append(
+                tfkl.Dense(n_hid, activation=activation, name=f"inner_dense_{i}")
+            )
         self.log_s_layer = tfkl.Dense(n_dim // 2, activation="tanh", name="log_s_layer")
         self.t_layer = tfkl.Dense(n_dim // 2, activation="linear", name="t_layer")
 
