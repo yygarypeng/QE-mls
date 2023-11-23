@@ -1,26 +1,20 @@
-> This is the edited fork from [GitHub](https://github.com/jaekookang/invertible_neural_networks) created by jaekookang.
+# Implementation of DNNs (AE) and INNs for reconstruction neutrinos
 
-> We use and edit it to do the backward reconstruction of di-nutrinos which is from the fully leptonic decay of the HWW* channel.
+This repository includes the code of the dense neural networks (Autoencoder) and invertible neural networks (Ardizzone et al., 2019) implemented using TensorFlow2 with Keras.
 
-# Implementation of Invertible Neural Networks (INNs) based on Ardizzone et al. (2019) using TensorFlow2 + Keras
+There are a few models in this repository: Our DNNs (AE) and INNs, which are the edited fork from [GitHub](https://github.com/jaekookang/invertible_neural_networks) created by jaekookang.
 
-![gaussian_mixture](https://github.com/jaekookang/invertible_neural_networks/blob/master/result/gauss_mixture.gif)
+We use or/and edit it to do the backward reconstruction of di-nutrinos and neutrinos from the fully leptonic decay of the $HWW^{*}$ channel.
 
-This repository includes the code example of the invertible neural networks (Ardizzone et al., 2019) implemented using TensorFlow2 with Keras. Two complementary coupling layers were implemented and toy examples were provided similar to the paper. The current code is largely based on the original PyTorch implementation by the authors but simplified for easier understanding than the original code and personal use.
-
-2020-11-26 first created
-
-## Open in Colab: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/jaekookang/invertible_neural_networks/blob/master/colab_example_gaussian_mixture.ipynb)
+ 
+2023-11-23 created with MIT license
 
 
 ## Original works:
 - Paper: http://arxiv.org/abs/1808.04730
-- Code: https://github.com/VLL-HD/analyzing_inverse_problems
-
+- Code: 
+    - https://github.com/VLL-HD/analyzing_inverse_problems
+	- https://github.com/jaekookang/invertible_neural_networks
 
 ## TODO:
-- [ ] Add the inverse kinematics example
-
-
-## Reference:
-- Ardizzone, L., Kruse, J., Wirkert, S., Rahner, D., Pellegrini, E. W., Klessen, R. S., Maier-Hein, L., Rother, C., & Köthe, U. (2019). Analyzing inverse problems with invertible neural networks. 7th International Conference on Learning Representations, ICLR 2019, 1–20.
+- [ ] Find some method to seperate di-neutrinos.

@@ -2,6 +2,25 @@ import gc
 import glob
 import numpy as np
 import pandas as pd
+from dataclasses import dataclass
+from multiprocessing import Pool
+
+
+@dataclass
+class Data:
+    CGLMP: pd.DataFrame
+    Higgs: pd.DataFrame
+    LeadLep: pd.DataFrame
+    LepM: pd.DataFrame
+    LepP: pd.DataFrame
+    NuM: pd.DataFrame
+    NuP: pd.DataFrame
+    MET: pd.DataFrame
+    Wm: pd.DataFrame
+    Wp: pd.DataFrame
+    diLep: pd.DataFrame
+    SubLep: pd.DataFrame
+    Xi: pd.DataFrame
 
 
 class DataProcessor:
@@ -13,7 +32,10 @@ class DataProcessor:
         files_name = self.get_files_names(path)
         self.files_name = files_name
         self.files_name.sort()
-        self.files = [self.get_data(f) for f in self.files_name]
+
+        with Pool() as p:
+            self.files = p.map(self.get_data, self.files_name)
+
         print(files_name)
         print()
 
@@ -28,26 +50,21 @@ class DataProcessor:
                 return pd.DataFrame(data_dict)
         except FileNotFoundError:
             print("File not found!")
-            return pd.DataFrame()
 
-    def process_lep(self, LepP, LepM):
-        lep_kin = (
+    def process_part(self, part):
+        part_kin = (
             pd.DataFrame(
                 {
-                    "lep_p_E": LepP["E"],
-                    "lep_p_px": LepP["px"],
-                    "lep_p_py": LepP["py"],
-                    "lep_p_pz": LepP["pz"],
-                    "lep_m_E": LepM["E"],
-                    "lep_m_px": LepM["px"],
-                    "lep_m_py": LepM["py"],
-                    "lep_m_pz": LepM["pz"],
+                    "E": part["E"],
+                    "px": part["px"],
+                    "py": part["py"],
+                    "pz": part["pz"],
                 }
             )
             / self.GEV
         )
-        lep_kin.drop(self.RMV_EVT, inplace=True)
-        return lep_kin
+        part_kin.drop(self.RMV_EVT, inplace=True)
+        return part_kin
 
     def process_MET(self, MET):
         nu_kin = (
@@ -68,37 +85,21 @@ class DataProcessor:
         nu_kin.drop(self.RMV_EVT, inplace=True)
         return nu_kin
 
-    def process_dinu(self, NuP, NuM):
+    def process_dipart(self, part1, part2):
         # Kinemetic info of neutirnos.
-        nu_kin = (
+        dipart_kin = (
             pd.DataFrame(
                 {
-                    "nu_E": NuP["E"] + NuM["E"],
-                    "nu_px": NuP["px"] + NuM["px"],
-                    "nu_py": NuP["py"] + NuM["py"],
-                    "nu_pz": NuP["pz"] + NuM["pz"],
+                    "E": part1["E"] + part2["E"],
+                    "px": part1["px"] + part2["px"],
+                    "py": part1["py"] + part2["py"],
+                    "pz": part1["pz"] + part2["pz"],
                 }
             )
             / self.GEV
         )
-        nu_kin.drop(self.RMV_EVT, inplace=True)
-        return nu_kin
-
-    def process_nu(self, Nu):
-        # Kinemetic info of neutirnos.
-        nu_kin = (
-            pd.DataFrame(
-                {
-                    "nu_E": Nu["E"],
-                    "nu_px": Nu["px"],
-                    "nu_py": Nu["py"],
-                    "nu_pz": Nu["pz"],
-                }
-            )
-            / self.GEV
-        )
-        nu_kin.drop(self.RMV_EVT, inplace=True)
-        return nu_kin
+        dipart_kin.drop(self.RMV_EVT, inplace=True)
+        return dipart_kin
 
     def process_CGLMP(self, CGLMP):
         CGLMP = pd.DataFrame(
@@ -116,36 +117,25 @@ if __name__ == "__main__":
     processor = DataProcessor()
     path = "/root/work/truth/signal/*npz"
     processor.load_files(path)
+    # Create an instance of the Data dataclass
+    data = Data(*processor.files)
 
-    (
-        CGLMP,
-        Higgs,
-        LeadLep,
-        LepM,
-        LepP,
-        NuM,
-        NuP,
-        MET,
-        Wm,
-        Wp,
-        diLep,
-        SubLep,
-        Xi,
-    ) = processor.files
-
-    lep_kin = processor.process_lep(LepP, LepM)
+    # Now you can access the dataframes like this:
+    lep_p = processor.process_part(data.LepP)
+    lep_m = processor.process_part(data.LepM)
+    lep_kin = pd.concat([lep_p, lep_m], axis=1)
     print("lep_kin shape:", lep_kin.shape)
     lep_kin.head(5)
 
-    MET_kin = processor.process_MET(MET)
+    MET_kin = processor.process_MET(data.MET)
     print("MET_kin shape:", MET_kin.shape)
     MET_kin.head(5)
 
-    dinu_kin = processor.process_dinu(NuP, NuM)
+    dinu_kin = processor.process_dipart(data.NuP, data.NuM)
     print("dinu_kin shape:", dinu_kin.shape)
     dinu_kin.head(5)
 
-    CGLMP_kin = processor.process_CGLMP(CGLMP)
+    CGLMP_kin = processor.process_CGLMP(data.CGLMP)
     print("CGLMP shape:", CGLMP_kin.shape)
     CGLMP_kin.head(5)
 

@@ -18,7 +18,7 @@ class NN(tfkl.Layer):
     Reused from https://github.com/MokkeMeguru/glow-realnvp-tutorial
     """
 
-    def __init__(self, n_dim, n_layer=3, n_hid=512, activation="elu", name="fc_layer"):
+    def __init__(self, n_dim, n_layer=3, n_hid=512, activation="relu", name="fc_layer"):
         super(NN, self).__init__(name=name)
         self.n_dim = n_dim
         self.n_layer = n_layer
@@ -242,7 +242,7 @@ def MMD_multiscale(x, y):
     YY = tf.zeros(xx.shape, dtype="float32")
     XY = tf.zeros(xx.shape, dtype="float32")
 
-    for a in [0.05, 0.2, 0.9]:
+    for a in [1, 5, 10]:
         XX += a**2 * 1 / (a**2 + dxx)
         YY += a**2 * 1 / (a**2 + dyy)
         XY += a**2 * 1 / (a**2 + dxy)
