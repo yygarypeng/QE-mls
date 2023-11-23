@@ -11,13 +11,14 @@ class Plotter:
         pass
 
     def plot_loss_history(self, history, save_name=None):
-        fig = plt.figure(figsize=(8, 5), dpi=120)
-        plt.plot(history.history["loss"], lw=2.5, label="Train", alpha=0.8)
-        plt.plot(history.history["val_loss"], lw=2.5, label="Validation", alpha=0.8)
-        plt.title("Epoch vs MSE", fontsize=16)
-        plt.xlabel("epoch", fontsize=14)
-        plt.ylabel("Loss (MSE)", fontsize=14)
-        plt.legend(loc="best")
+        fig, ax = plt.subplots(figsize=(8, 5), dpi=120)
+        ax.plot(history.history["loss"], lw=2.5, label="Train", alpha=0.8)
+        ax.plot(history.history["val_loss"], lw=2.5, label="Validation", alpha=0.8)
+        ax.set_title("Epoch vs MSE", fontsize=16)
+        ax.set_xlabel("epoch", fontsize=14)
+        ax.set_ylabel("Loss (MSE)", fontsize=14)
+        ax.legend(loc="best")
+        ax.tick_params(axis="both", labelsize=12)
         if save_name is not None:
             plt.savefig(save_name)
         plt.show()
@@ -75,6 +76,7 @@ class Plotter:
             axis="x", which="both", bottom=False, top=False, labelbottom=False
         )
         axs[0].set_ylabel("(Normalized) counts", fontsize=14)
+        axs[0].tick_params(axis="both", labelsize=12)
 
         ratio = np.divide(arr1[0], arr0[0], where=(arr0[0] != 0))
         axs[1].set_xlabel(label[0] + f" [{unit}]", fontsize=14)
@@ -82,6 +84,7 @@ class Plotter:
         axs[1].axhline(y=1, color="grey", linestyle="--", alpha=0.5)
         axs[1].set_ylabel("ratio", fontsize=14)
         axs[1].tick_params(axis="x", which="both", pad=10)
+        axs[1].tick_params(axis="both", labelsize=12)
         if save_name is not None:
             plt.savefig(save_name)
         plt.show()
@@ -92,9 +95,12 @@ class Plotter:
         self, pred, truth, title, save_name=None, bins=150, range=None
     ):
         if range is None:
-            range = [np.min([pred, truth]), np.max([pred, truth])]
-        fig = plt.figure(figsize=(7, 6), dpi=120)
-        plt.hist2d(
+            range = [
+                np.min([np.min(pred), np.min(truth)]),
+                np.max([np.max(pred), np.max(truth)]),
+            ]
+        fig, ax = plt.subplots(figsize=(7, 6), dpi=120)
+        h = ax.hist2d(
             pred,
             truth,
             bins=bins,
@@ -103,15 +109,17 @@ class Plotter:
             cmin=1,
             norm=LogNorm(),
         )
-        cbar = plt.colorbar()
+        cbar = fig.colorbar(h[3], ax=ax)
         cbar.set_label("Frequency", fontsize=12)
-        plt.title(title, fontsize=16)
-        plt.xlabel("Truth", fontsize=12)
-        plt.ylabel("Prediction", fontsize=12)
-        plt.plot(range, range, color="grey", linestyle="--", alpha=0.8)  # add y=x line
-        plt.xlim(range)
-        plt.ylim(range)
-        plt.gca().set_aspect("equal", adjustable="box")
+        cbar.ax.tick_params(axis="both", which="both", labelsize=12)
+        ax.set_title(title, fontsize=16)
+        ax.set_xlabel("Truth", fontsize=12)
+        ax.set_ylabel("Prediction", fontsize=12)
+        ax.plot(range, range, color="grey", linestyle="--", alpha=0.8)  # add y=x line
+        ax.set_aspect("equal", adjustable="box")
+        ax.tick_params(axis="both", labelsize=12)
+        ax.set_xlim(range)
+        ax.set_ylim(range)
         if save_name is not None:
             plt.savefig(save_name)
         plt.show()

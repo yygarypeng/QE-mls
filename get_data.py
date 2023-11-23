@@ -24,7 +24,8 @@ class Data:
 
 
 class DataProcessor:
-    def __init__(self):
+    def __init__(self, sampling=int(1e3)):
+        self.sampling: int = sampling
         self.GEV = 1e3
         self.RMV_EVT = []
 
@@ -46,7 +47,9 @@ class DataProcessor:
     def get_data(self, path):
         try:
             with np.load(path, allow_pickle=True) as f:
-                data_dict = {name: f[name] for name in f.files}
+                data_dict = {
+                    name: np.random.choice(f[name], self.sampling) for name in f.files
+                }  # use indices to select rows
                 return pd.DataFrame(data_dict)
         except FileNotFoundError:
             print("File not found!")
