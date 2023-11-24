@@ -34,7 +34,7 @@ class Plotter:
         label=None,
         title=r"Normalized $p^{miss}_{x}$ of MET",
         range=None,
-        unit="GeV",
+        xlabel="GeV",
         save_name=None,
     ):
         # Determine the range of the histogram
@@ -84,6 +84,11 @@ class Plotter:
             labelbottom=False,
             labelsize=12,
         )
+        axs[0].tick_params(
+            axis="y",
+            which="both",
+            labelsize=12,
+        )
         axs[0].legend()
 
         # Calculate the ratio of the two histograms
@@ -92,9 +97,10 @@ class Plotter:
         # Plot the ratio and set the labels and tick parameters for the second subplot
         axs[1].plot(arr0[1][:-1], ratio, "--", color="black", linewidth=1)
         axs[1].axhline(y=1, color="grey", linestyle="--", alpha=0.5)
-        axs[1].set_xlabel(label[0] + f" [{unit}]", fontsize=14)
+        axs[1].set_xlabel(f"{xlabel}", fontsize=14)
         axs[1].set_ylabel("ratio", fontsize=14)
         axs[1].tick_params(axis="x", which="both", pad=10, labelsize=12)
+        axs[1].tick_params(axis="y", which="both", labelsize=12)
 
         # Save the figure if a save name is provided
         if save_name:
