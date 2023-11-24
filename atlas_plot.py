@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 import mplhep as hep
 
+import unittest
+
 hep.style.use("ATLAS")
 
 
@@ -10,7 +12,7 @@ class Plotter:
     def __init__(self):
         pass
 
-    def plot_loss_history(self, history, save_name=None):
+    def plot_loss_history(self, history, logy=False, save_name=None):
         fig, ax = plt.subplots(figsize=(8, 5), dpi=120)
         ax.plot(history.history["loss"], lw=2.5, label="Train", alpha=0.8)
         ax.plot(history.history["val_loss"], lw=2.5, label="Validation", alpha=0.8)
@@ -19,11 +21,12 @@ class Plotter:
         ax.set_ylabel("Loss (MSE)", fontsize=14)
         ax.legend(loc="best")
         ax.tick_params(axis="both", labelsize=12)
+        if logy is True:
+            ax.set_yscale("log")
         if save_name is not None:
             plt.savefig(save_name)
         plt.show()
         plt.close()
-        plt.clf()
 
     def plot_hist(
         self,
@@ -34,14 +37,11 @@ class Plotter:
         unit="GeV",
         save_name=None,
     ):
-        if range is None:
-            min_val = np.min(data[0])
-            max_val = np.max(data[0])
-            range_val = [min_val, max_val]
-        else:
-            range_val = range
+        # Determine the range of the histogram
+        data_min, data_max = np.min(data[0]), np.max(data[0])
+        range_val = range if range else [data_min, data_max]
 
-        n_bins = 50
+        # Create the subplots
         fig, axs = plt.subplots(
             2,
             1,
@@ -50,9 +50,11 @@ class Plotter:
             sharex=True,
             gridspec_kw={"height_ratios": [3, 1], "hspace": 0.1},
         )
+
+        # Plot the histograms
         arr0 = axs[0].hist(
             data[0],
-            bins=n_bins,
+            bins=50,
             histtype="step",
             density=True,
             color="red",
@@ -62,7 +64,7 @@ class Plotter:
         )
         arr1 = axs[0].hist(
             data[1],
-            bins=n_bins,
+            bins=50,
             histtype="step",
             density=True,
             color="blue",
@@ -70,26 +72,37 @@ class Plotter:
             label=label[1],
             range=range_val,
         )
-        axs[0].legend()
-        axs[0].set_title(title, fontsize=20)
-        axs[0].tick_params(
-            axis="x", which="both", bottom=False, top=False, labelbottom=False
-        )
-        axs[0].set_ylabel("(Normalized) counts", fontsize=14)
-        axs[0].tick_params(axis="both", labelsize=12)
 
+        # Set the title, labels, and tick parameters for the first subplot
+        axs[0].set_title(title, fontsize=20)
+        axs[0].set_ylabel("(Normalized) counts", fontsize=14)
+        axs[0].tick_params(
+            axis="x",
+            which="both",
+            bottom=False,
+            top=False,
+            labelbottom=False,
+            labelsize=12,
+        )
+        axs[0].legend()
+
+        # Calculate the ratio of the two histograms
         ratio = np.divide(arr1[0], arr0[0], where=(arr0[0] != 0))
-        axs[1].set_xlabel(label[0] + f" [{unit}]", fontsize=14)
+
+        # Plot the ratio and set the labels and tick parameters for the second subplot
         axs[1].plot(arr0[1][:-1], ratio, "--", color="black", linewidth=1)
         axs[1].axhline(y=1, color="grey", linestyle="--", alpha=0.5)
+        axs[1].set_xlabel(label[0] + f" [{unit}]", fontsize=14)
         axs[1].set_ylabel("ratio", fontsize=14)
-        axs[1].tick_params(axis="x", which="both", pad=10)
-        axs[1].tick_params(axis="both", labelsize=12)
-        if save_name is not None:
+        axs[1].tick_params(axis="x", which="both", pad=10, labelsize=12)
+
+        # Save the figure if a save name is provided
+        if save_name:
             plt.savefig(save_name)
+
+        # Show and close the plot
         plt.show()
         plt.close()
-        plt.clf()
 
     def plot_2d_histogram(
         self, pred, truth, title, save_name=None, bins=150, range=None
@@ -124,29 +137,35 @@ class Plotter:
             plt.savefig(save_name)
         plt.show()
         plt.close()
-        plt.clf()
+
+
+# Test codes
+
+
+class History:
+    def __init__(self, loss, val_loss):
+        self.history = {"loss": loss, "val_loss": val_loss}
+
+
+class TestPlotter(unittest.TestCase):
+    def setUp(self):
+        self.plotter = Plotter()
+        self.data = [np.random.normal(0, 1, 1000), np.random.normal(0, 1, 1000)]
+        self.labels = ["Data 1", "Data 2"]
+        self.history = History(np.random.rand(10), np.random.rand(10))
+
+    def test_plot_loss_history(self):
+        # Just check if the method runs without errors
+        self.plotter.plot_loss_history(self.history, logy=True)
+
+    def test_plot_hist(self):
+        # Just check if the method runs without errors
+        self.plotter.plot_hist(self.data, self.labels)
+
+    def test_plot_2d_histogram(self):
+        # Just check if the method runs without errors
+        self.plotter.plot_2d_histogram(self.data[0], self.data[1], "2D Histogram")
 
 
 if __name__ == "__main__":
-    plotter = Plotter()
-
-    # Test plot_loss_history
-    class History:
-        def __init__(self):
-            self.history = {
-                "loss": [0.1, 0.2, 0.3, 0.4, 0.5],
-                "val_loss": [0.2, 0.3, 0.4, 0.5, 0.6],
-            }
-
-    history = History()
-    plotter.plot_loss_history(history)
-
-    # Test hist
-    data = [np.random.normal(0, 1, 1000), np.random.normal(0, 1, 1000)]
-    label = ["Data 1", "Data 2"]
-    plotter.plot_hist(data, label)
-
-    # Test plot_2d_histogram
-    pred = np.random.normal(0, 1, 1000)
-    truth = np.random.normal(0, 1, 1000)
-    plotter.plot_2d_histogram(pred, truth, "2D Histogram", "2d_hist.png")
+    unittest.main()

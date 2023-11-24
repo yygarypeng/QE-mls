@@ -5,6 +5,9 @@ import pandas as pd
 from dataclasses import dataclass
 from multiprocessing import Pool
 
+import unittest
+import tempfile
+
 
 @dataclass
 class Data:
@@ -116,31 +119,80 @@ class DataProcessor:
         return CGLMP
 
 
+#  Test codes
+class TestDataProcessor(unittest.TestCase):
+    def setUp(self):
+        self.dp = DataProcessor(sampling=1000)
+        self.dp.RMV_EVT = []  # Ensure RMV_EVT is empty
+
+    def test_get_files_names(self):
+        # Replace with a valid path in your system
+        path = "/path/to/your/files/*"
+        files = self.dp.get_files_names(path)
+        self.assertIsInstance(files, list)
+
+    def test_get_data(self):
+        # Create a temporary file
+        with tempfile.NamedTemporaryFile(suffix=".npz", delete=False) as temp:
+            # Save some data to the temporary file
+            np.savez(temp.name, np.array([1, 2, 3]))
+            # Use the temporary file in the test
+            data = self.dp.get_data(temp.name)
+            self.assertIsInstance(data, pd.DataFrame)
+
+    def test_process_part(self):
+        part = pd.DataFrame(
+            {
+                "E": np.random.rand(10),
+                "px": np.random.rand(10),
+                "py": np.random.rand(10),
+                "pz": np.random.rand(10),
+            }
+        )
+        processed_part = self.dp.process_part(part)
+        self.assertIsInstance(processed_part, pd.DataFrame)
+
+    def test_process_MET(self):
+        MET = pd.DataFrame(
+            {
+                "px": np.random.rand(10),
+                "py": np.random.rand(10),
+            }
+        )
+        processed_MET = self.dp.process_MET(MET)
+        self.assertIsInstance(processed_MET, pd.DataFrame)
+
+    def test_process_dipart(self):
+        part1 = pd.DataFrame(
+            {
+                "E": np.random.rand(10),
+                "px": np.random.rand(10),
+                "py": np.random.rand(10),
+                "pz": np.random.rand(10),
+            }
+        )
+        part2 = pd.DataFrame(
+            {
+                "E": np.random.rand(10),
+                "px": np.random.rand(10),
+                "py": np.random.rand(10),
+                "pz": np.random.rand(10),
+            }
+        )
+        processed_dipart = self.dp.process_dipart(part1, part2)
+        self.assertIsInstance(processed_dipart, pd.DataFrame)
+
+    def test_process_CGLMP(self):
+        CGLMP = pd.DataFrame(
+            {
+                "Bxy": np.random.rand(10),
+                "Byz": np.random.rand(10),
+                "Bzx": np.random.rand(10),
+            }
+        )
+        processed_CGLMP = self.dp.process_CGLMP(CGLMP)
+        self.assertIsInstance(processed_CGLMP, pd.DataFrame)
+
+
 if __name__ == "__main__":
-    processor = DataProcessor()
-    path = "/root/work/truth/signal/*npz"
-    processor.load_files(path)
-    # Create an instance of the Data dataclass
-    data = Data(*processor.files)
-
-    # Now you can access the dataframes like this:
-    lep_p = processor.process_part(data.LepP)
-    lep_m = processor.process_part(data.LepM)
-    lep_kin = pd.concat([lep_p, lep_m], axis=1)
-    print("lep_kin shape:", lep_kin.shape)
-    lep_kin.head(5)
-
-    MET_kin = processor.process_MET(data.MET)
-    print("MET_kin shape:", MET_kin.shape)
-    MET_kin.head(5)
-
-    dinu_kin = processor.process_dipart(data.NuP, data.NuM)
-    print("dinu_kin shape:", dinu_kin.shape)
-    dinu_kin.head(5)
-
-    CGLMP_kin = processor.process_CGLMP(data.CGLMP)
-    print("CGLMP shape:", CGLMP_kin.shape)
-    CGLMP_kin.head(5)
-
-    del processor  # Clear the instance
-    gc.collect()
+    unittest.main()
