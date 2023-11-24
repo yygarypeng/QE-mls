@@ -3,7 +3,8 @@ import glob
 import numpy as np
 import pandas as pd
 from dataclasses import dataclass
-from multiprocessing import Pool
+import multiprocessing
+import os
 
 import unittest
 import tempfile
@@ -27,7 +28,8 @@ class Data:
 
 
 class DataProcessor:
-    def __init__(self, sampling=int(1e3)):
+    def __init__(self, sampling=int(1e3), processor=os.cpu_count()):
+        self.used_processes = processor
         self.sampling: int = sampling
         self.GEV = 1e3
         self.RMV_EVT = []
@@ -37,7 +39,11 @@ class DataProcessor:
         self.files_name = files_name
         self.files_name.sort()
 
-        with Pool() as p:
+        num_processes = multiprocessing.cpu_count()
+        print(f"Number of available processors: {num_processes}")
+        print(f"Number of used processors: {self.used_processes}")
+        print()
+        with multiprocessing.Pool(self.used_processes) as p:
             self.files = p.map(self.get_data, self.files_name)
 
         print(files_name)
