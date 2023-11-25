@@ -79,8 +79,8 @@ class Plotter:
         axs[0].tick_params(
             axis="x",
             which="both",
-            bottom=False,
-            top=False,
+            bottom=True,
+            top=True,
             labelbottom=False,
             labelsize=12,
         )

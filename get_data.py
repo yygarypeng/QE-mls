@@ -2,6 +2,7 @@ import gc
 import glob
 import numpy as np
 import pandas as pd
+import randomgen
 from dataclasses import dataclass
 import multiprocessing
 import os
@@ -28,9 +29,10 @@ class Data:
 
 
 class DataProcessor:
-    def __init__(self, sampling=int(1e3), processor=os.cpu_count()):
-        self.used_processes = processor
+    def __init__(self, sampling=int(1e3), processor=os.cpu_count(), random_seed=42):
+        self.used_processes: int = processor
         self.sampling: int = sampling
+        self.rng = np.random.default_rng(random_seed)
         self.GEV = 1e3
         self.RMV_EVT = []
 
@@ -54,14 +56,11 @@ class DataProcessor:
         return files_name
 
     def get_data(self, path):
-        try:
-            with np.load(path, allow_pickle=True) as f:
-                data_dict = {
-                    name: np.random.choice(f[name], self.sampling) for name in f.files
-                }  # use indices to select rows
-                return pd.DataFrame(data_dict)
-        except FileNotFoundError:
-            print("File not found!")
+        with np.load(path, allow_pickle=True) as f:
+            data_dict = {
+                name: self.rng.choice(f[name], self.sampling) for name in f.files
+            }
+        return pd.DataFrame(data_dict)
 
     def process_part(self, part):
         part_kin = (
