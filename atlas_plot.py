@@ -13,18 +13,38 @@ class Plotter:
         pass
 
     def plot_loss_history(self, history, logy=False, save_name=None):
-        fig, ax = plt.subplots(figsize=(8, 5), dpi=120)
-        ax.plot(history.history["loss"], lw=2.5, label="Train", alpha=0.8)
-        ax.plot(history.history["val_loss"], lw=2.5, label="Validation", alpha=0.8)
-        ax.set_title("Epoch vs MSE", fontsize=16)
-        ax.set_xlabel("epoch", fontsize=14)
-        ax.set_ylabel("Loss (MSE)", fontsize=14)
-        ax.legend(loc="best")
-        ax.tick_params(axis="both", labelsize=12)
+        # Create the subplots
+        fig, axs = plt.subplots(
+            2,
+            1,
+            figsize=(6, 6),
+            dpi=100,
+            sharex=True,
+            gridspec_kw={"height_ratios": [1, 1], "hspace": 0.1},
+        )
+        axs[0].plot(history.history["loss"], lw=2.5, label="Train", alpha=0.8)
+        axs[0].plot(history.history["val_loss"], lw=2.5, label="Validation", alpha=0.8)
+        axs[1].plot(history.history["accuracy"], lw=2.5, label="Train", alpha=0.8)
+        axs[1].plot(
+            history.history["val_accuracy"], lw=2.5, label="Validation", alpha=0.8
+        )
+
+        axs[0].set_title("Learning curves", fontsize=16)
+        axs[0].set_ylabel("Loss (MSE)", fontsize=14)
+        axs[1].set_xlabel("epoch", fontsize=14)
+        axs[1].set_ylabel("Accuracy", fontsize=14)
+
+        axs[0].legend(loc="best")
+        axs[0].tick_params(axis="both", which="both", labelsize=12)
+        axs[1].tick_params(axis="both", which="both", labelsize=12)
+
         if logy is True:
-            ax.set_yscale("log")
+            axs[0].set_yscale("log")
+            # axs[1].set_yscale("log")
+
         if save_name is not None:
             plt.savefig(save_name)
+
         plt.show()
         plt.close()
 
@@ -146,31 +166,46 @@ class Plotter:
 
 
 # Test codes
-
-
-class History:
-    def __init__(self, loss, val_loss):
-        self.history = {"loss": loss, "val_loss": val_loss}
-
-
 class TestPlotter(unittest.TestCase):
     def setUp(self):
         self.plotter = Plotter()
+        # Create a mock history object
+        self.history = type("", (), {})()
+        self.history.history = {
+            "loss": np.random.rand(10),
+            "val_loss": np.random.rand(10),
+            "accuracy": np.random.rand(10),
+            "val_accuracy": np.random.rand(10),
+        }
         self.data = [np.random.normal(0, 1, 1000), np.random.normal(0, 1, 1000)]
         self.labels = ["Data 1", "Data 2"]
-        self.history = History(np.random.rand(10), np.random.rand(10))
 
     def test_plot_loss_history(self):
         # Just check if the method runs without errors
-        self.plotter.plot_loss_history(self.history, logy=True)
+        try:
+            self.plotter.plot_loss_history(self.history, logy=True)
+            result = True
+        except:
+            result = False
+        self.assertEqual(result, True)
 
     def test_plot_hist(self):
         # Just check if the method runs without errors
-        self.plotter.plot_hist(self.data, self.labels)
+        try:
+            self.plotter.plot_hist(self.data, self.labels)
+            result = True
+        except:
+            result = False
+        self.assertEqual(result, True)
 
     def test_plot_2d_histogram(self):
         # Just check if the method runs without errors
-        self.plotter.plot_2d_histogram(self.data[0], self.data[1], "2D Histogram")
+        try:
+            self.plotter.plot_2d_histogram(self.data[0], self.data[1], "2D Histogram")
+            result = True
+        except:
+            result = False
+        self.assertEqual(result, True)
 
 
 if __name__ == "__main__":
