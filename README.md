@@ -1,6 +1,6 @@
-# Implementation of DNNs (AE) and INNs for reconstruction neutrinos
+# Implementation of DNNs and INNs for the reconstruction of neutrinos
 
-This repository includes the code of the dense neural networks (autoencoder) and invertible neural networks (Ardizzone et al., 2019) implemented using TensorFlow2 with Keras.
+This repository includes the code of the dense neural networks and invertible neural networks (Ardizzone et al., 2019) implemented using TensorFlow2 with Keras.
 
 There are a few models in this repository: Our DNNs (AE) and INNs, which are the edited fork from [GitHub](https://github.com/jaekookang/invertible_neural_networks) created by jaekookang.
 
