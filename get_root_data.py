@@ -6,7 +6,7 @@ import uproot
 from dataclasses import dataclass
 
 
-class Read_root:
+class ReadRoot:
     def __init__(
         self,
         leaves,
@@ -81,22 +81,22 @@ class Leaves:
 class Data:
     leaves = Leaves()
 
-    _reader_e_truth = Read_root(leaves.leaves_truth_electron)
+    _reader_e_truth = ReadRoot(leaves.leaves_truth_electron)
     e_truth: pd.DataFrame = _reader_e_truth.gen_data()
 
-    _reader_mu_truth = Read_root(leaves.leaves_truth_muon)
+    _reader_mu_truth = ReadRoot(leaves.leaves_truth_muon)
     mu_truth: pd.DataFrame = _reader_mu_truth.gen_data()
 
-    _reader_met_truth = Read_root(leaves.leaves_truth_met)
+    _reader_met_truth = ReadRoot(leaves.leaves_truth_met)
     met_truth: pd.DataFrame = _reader_met_truth.gen_data()
 
-    _reader_e_reco = Read_root(leaves.leaves_reco_electron)
+    _reader_e_reco = ReadRoot(leaves.leaves_reco_electron)
     e_reco: pd.DataFrame = _reader_e_reco.gen_data()
 
-    _reader_mu_reco = Read_root(leaves.leaves_reco_muon)
+    _reader_mu_reco = ReadRoot(leaves.leaves_reco_muon)
     mu_reco: pd.DataFrame = _reader_mu_reco.gen_data()
 
-    _reader_met_reco = Read_root(leaves.leaves_reco_met)
+    _reader_met_reco = ReadRoot(leaves.leaves_reco_met)
     met_reco: pd.DataFrame = _reader_met_reco.gen_data()
 
 
