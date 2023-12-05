@@ -10,7 +10,7 @@ class ReadRoot:
     def __init__(
         self,
         leaves,
-        path="/root/work/truthreco/signal/*mc16d*/",
+        path="/root/data/truthreco/*mc16d*/",
         tree="CollectionTree;1",
     ):
         self.path = path
