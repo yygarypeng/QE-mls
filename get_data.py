@@ -68,6 +68,10 @@ class DataProcessor:
                     "px": part["px"],
                     "py": part["py"],
                     "pz": part["pz"],
+                    "m": part["m"],
+                    "pt": part["pt"],
+                    "eta": part["eta"],
+                    "phi": part["phi"],
                 }
             )
             / self.GEV
@@ -103,6 +107,10 @@ class DataProcessor:
                     "px": part1["px"] + part2["px"],
                     "py": part1["py"] + part2["py"],
                     "pz": part1["pz"] + part2["pz"],
+                    "m": part1["m"] + part2["m"],
+                    "pt": part1["pt"] + part2["pt"],
+                    "eta": part1["eta"] + part2["eta"],
+                    "phi": part1["phi"] + part2["phi"],
                 }
             )
             / self.GEV
@@ -150,6 +158,10 @@ class TestDataProcessor(unittest.TestCase):
                 "px": np.random.rand(10),
                 "py": np.random.rand(10),
                 "pz": np.random.rand(10),
+                "m": np.random.rand(10),
+                "pt": np.random.rand(10),
+                "eta": np.random.rand(10),
+                "phi": np.random.rand(10),
             }
         )
         processed_part = self.dp.process_part(part)
@@ -172,6 +184,10 @@ class TestDataProcessor(unittest.TestCase):
                 "px": np.random.rand(10),
                 "py": np.random.rand(10),
                 "pz": np.random.rand(10),
+                "m": np.random.rand(10),
+                "pt": np.random.rand(10),
+                "eta": np.random.rand(10),
+                "phi": np.random.rand(10),
             }
         )
         part2 = pd.DataFrame(
@@ -180,6 +196,10 @@ class TestDataProcessor(unittest.TestCase):
                 "px": np.random.rand(10),
                 "py": np.random.rand(10),
                 "pz": np.random.rand(10),
+                "m": np.random.rand(10),
+                "pt": np.random.rand(10),
+                "eta": np.random.rand(10),
+                "phi": np.random.rand(10),
             }
         )
         processed_dipart = self.dp.process_dipart(part1, part2)

@@ -12,34 +12,44 @@ class Plotter:
     def __init__(self):
         pass
 
-    def plot_loss_history(self, history, logy=False, save_name=None):
+    def plot_loss_history(self, history, logy=False, logx=False, save_name=None):
         # Create the subplots
         fig, axs = plt.subplots(
-            2,
+            1,  # if plotting accuracy, change to 2
             1,
             figsize=(6, 6),
             dpi=100,
             sharex=True,
-            gridspec_kw={"height_ratios": [1, 1], "hspace": 0.1},
+            # gridspec_kw={"height_ratios": [1, 1], "hspace": 0.1},
         )
-        axs[0].plot(history.history["loss"], lw=2.5, label="Train", alpha=0.8)
-        axs[0].plot(history.history["val_loss"], lw=2.5, label="Validation", alpha=0.8)
-        axs[1].plot(history.history["accuracy"], lw=2.5, label="Train", alpha=0.8)
-        axs[1].plot(
-            history.history["val_accuracy"], lw=2.5, label="Validation", alpha=0.8
-        )
+        # axs[0].plot(history.history["loss"], lw=2.5, label="Train", alpha=0.8)
+        # axs[0].plot(history.history["val_loss"], lw=2.5, label="Validation", alpha=0.8)
+        axs.plot(history.history["loss"], lw=2.5, label="Train", alpha=0.8)
+        axs.plot(history.history["val_loss"], lw=2.5, label="Validation", alpha=0.8)
+        # axs[1].plot(history.history["accuracy"], lw=2.5, label="Train", alpha=0.8)
+        # axs[1].plot(
+        #     history.history["val_accuracy"], lw=2.5, label="Validation", alpha=0.8
+        # )
 
-        axs[0].set_title("Learning curves", fontsize=16)
-        axs[0].set_ylabel("Loss (MSE)", fontsize=14)
-        axs[1].set_xlabel("epoch", fontsize=14)
-        axs[1].set_ylabel("Accuracy", fontsize=14)
+        axs.set_title("Learning curves", fontsize=16)
+        axs.set_ylabel("Loss (MSE)", fontsize=14)
+        axs.set_xlabel("epoch", fontsize=14)
+        # axs[0].set_title("Learning curves", fontsize=16)
+        # axs[0].set_ylabel("Loss (MSE)", fontsize=14)
+        # axs[1].set_xlabel("epoch", fontsize=14)
+        # axs[1].set_ylabel("Accuracy", fontsize=14)
 
-        axs[0].legend(loc="best")
-        axs[0].tick_params(axis="both", which="both", labelsize=12)
-        axs[1].tick_params(axis="both", which="both", labelsize=12)
+        axs.legend(loc="best")
+        axs.tick_params(axis="both", which="both", labelsize=12)
+        # axs[0].legend(loc="best")
+        # axs[0].tick_params(axis="both", which="both", labelsize=12)
+        # axs[1].tick_params(axis="both", which="both", labelsize=12)
 
         if logy is True:
-            axs[0].set_yscale("log")
+            axs.set_yscale("log")
+        if logx is True:
+            axs.set_xscale("log")
+            # axs[0].set_yscale("log")
             # axs[1].set_yscale("log")
 
         if save_name is not None:
