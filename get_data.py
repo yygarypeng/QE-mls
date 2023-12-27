@@ -55,9 +55,7 @@ class DataProcessor:
 
     def get_data(self, path):
         with np.load(path, allow_pickle=True) as f:
-            data_dict = {
-                name: self.rng.choice(f[name], self.sampling) for name in f.files
-            }
+            data_dict = {name: f[name] for name in f.files}
         return pd.DataFrame(data_dict)
 
     def process_part(self, part):
@@ -107,10 +105,12 @@ class DataProcessor:
                     "px": part1["px"] + part2["px"],
                     "py": part1["py"] + part2["py"],
                     "pz": part1["pz"] + part2["pz"],
-                    "m": part1["m"] + part2["m"],
-                    "pt": part1["pt"] + part2["pt"],
-                    "eta": part1["eta"] + part2["eta"],
-                    "phi": part1["phi"] + part2["phi"],
+                    "m": np.sqrt(
+                        np.square(part1["E"] + part2["E"])
+                        - np.square(part1["px"] + part2["px"])
+                        - np.square(part1["py"] + part2["py"])
+                        - np.square(part1["pz"] + part2["pz"])
+                    ),
                 }
             )
             / self.GEV
