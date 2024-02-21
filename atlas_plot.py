@@ -40,10 +40,10 @@ class Plotter:
         # axs[1].set_ylabel("Accuracy", fontsize=14)
 
         axs.legend(loc="best")
-        axs.tick_params(axis="both", which="both", labelsize=12)
+        axs.tick_params(axis="both", which="both", labelsize=10)
         # axs[0].legend(loc="best")
-        # axs[0].tick_params(axis="both", which="both", labelsize=12)
-        # axs[1].tick_params(axis="both", which="both", labelsize=12)
+        # axs[0].tick_params(axis="both", which="both", labelsize=10)
+        # axs[1].tick_params(axis="both", which="both", labelsize=10)
 
         if logy is True:
             axs.set_yscale("log")
@@ -112,12 +112,12 @@ class Plotter:
             bottom=True,
             top=True,
             labelbottom=False,
-            labelsize=12,
+            labelsize=10,
         )
         axs[0].tick_params(
             axis="y",
             which="both",
-            labelsize=12,
+            labelsize=10,
         )
         axs[0].legend()
 
@@ -129,8 +129,8 @@ class Plotter:
         axs[1].axhline(y=1, color="grey", linestyle="--", alpha=0.5)
         axs[1].set_xlabel(f"{xlabel}", fontsize=14)
         axs[1].set_ylabel("ratio", fontsize=14)
-        axs[1].tick_params(axis="x", which="both", pad=10, labelsize=12)
-        axs[1].tick_params(axis="y", which="both", labelsize=12)
+        axs[1].tick_params(axis="x", which="both", pad=10, labelsize=10)
+        axs[1].tick_params(axis="y", which="both", labelsize=10)
 
         # Save the figure if a save name is provided
         if save_name:
@@ -160,17 +160,18 @@ class Plotter:
         )
         cbar = fig.colorbar(h[3], ax=ax)
         cbar.set_label("Frequency", fontsize=12)
-        cbar.ax.tick_params(axis="both", which="both", labelsize=12)
+        cbar.ax.tick_params(axis="both", which="both", labelsize=10)
         ax.set_title(title, fontsize=16)
         ax.set_xlabel("Truth", fontsize=12)
         ax.set_ylabel("Prediction", fontsize=12)
         ax.plot(range, range, color="grey", linestyle="--", alpha=0.8)  # add y=x line
         ax.set_aspect("equal", adjustable="box")
-        ax.tick_params(axis="both", labelsize=12)
+        ax.tick_params(axis="both", labelsize=10)
         ax.set_xlim(range)
         ax.set_ylim(range)
         if save_name is not None:
             plt.savefig(save_name)
+        # hep.atlas.label(loc=1)
         plt.show()
         plt.close()
 
