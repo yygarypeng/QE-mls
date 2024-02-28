@@ -140,6 +140,51 @@ class Plotter:
         plt.show()
         plt.close()
 
+    def hist(
+        self,
+        data,
+        range=[0.3, 0.7],
+        title=r"$p_{z}^{\nu\nu}$",
+        label=r"$p_{z}^{\nu\nu}$",
+    ):
+
+        fig, ax = plt.subplots(
+            nrows=2,
+            ncols=1,
+            figsize=(8, 8),
+            gridspec_kw={"height_ratios": [6, 2]},
+            sharex=True,
+            tight_layout=True,
+        )
+        ax = ax.flatten()
+        truth_bar, truth_bin = np.histogram(data[0], bins=50, range=range)
+        pred_bar, pred_bin = np.histogram(data[1], bins=50, range=range)
+        hep.histplot(
+            truth_bar, truth_bin, label="True " + label, ax=ax[0], lw=2, color="b"
+        )
+        hep.histplot(
+            pred_bar,
+            truth_bin,
+            label="Pred " + label,
+            ax=ax[0],
+            lw=2,
+            color="r",
+        )
+        ax[0].set_xlim(range)
+        ax[0].legend()
+        ax[0].set_ylabel("Counts")
+        ax[0].set_title(title)
+        ratio = np.divide(pred_bar, truth_bar, where=(truth_bar != 0))
+        ax[1].vlines(truth_bin[1::], 1, ratio, color="k", lw=1)
+        ax[1].scatter(truth_bin[1::], ratio, color="k", lw=1, s=10, label="")
+        # ax[1].set_yscale('log')
+        ax[1].set_ylim([0, 2])
+        ax[1].axhline(1, c="grey", ls="dashed")
+        ax[1].set_xlabel("Scaled " + label + " [unit]")
+        ax[1].set_ylabel("True/Pred")
+        ax[1].tick_params(axis="x", pad=9)
+        plt.show()
+
     def plot_2d_histogram(
         self, pred, truth, title, save_name=None, bins=150, range=None
     ):
@@ -180,7 +225,6 @@ class Plotter:
 class TestPlotter(unittest.TestCase):
     def setUp(self):
         self.plotter = Plotter()
-        # Create a mock history object
         self.history = type("", (), {})()
         self.history.history = {
             "loss": np.random.rand(10),
@@ -190,9 +234,10 @@ class TestPlotter(unittest.TestCase):
         }
         self.data = [np.random.normal(0, 1, 1000), np.random.normal(0, 1, 1000)]
         self.labels = ["Data 1", "Data 2"]
+        self.truth = np.random.rand(1000)
+        self.pred = np.random.rand(1000)
 
     def test_plot_loss_history(self):
-        # Just check if the method runs without errors
         try:
             self.plotter.plot_loss_history(self.history, logy=True)
             result = True
@@ -201,7 +246,6 @@ class TestPlotter(unittest.TestCase):
         self.assertEqual(result, True)
 
     def test_plot_hist(self):
-        # Just check if the method runs without errors
         try:
             self.plotter.plot_hist(self.data, self.labels)
             result = True
@@ -209,10 +253,18 @@ class TestPlotter(unittest.TestCase):
             result = False
         self.assertEqual(result, True)
 
-    def test_plot_2d_histogram(self):
-        # Just check if the method runs without errors
+    def test_hist(self):
         try:
-            self.plotter.plot_2d_histogram(self.data[0], self.data[1], "2D Histogram")
+            self.plotter.hist(self.data)
+            result = True
+        except Exception as e:
+            print(f"Caught an exception: {e}")
+            result = False
+        self.assertEqual(result, True)
+
+    def test_plot_2d_histogram(self):
+        try:
+            self.plotter.plot_2d_histogram(self.truth, self.pred, "2D Histogram")
             result = True
         except:
             result = False

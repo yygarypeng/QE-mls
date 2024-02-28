@@ -27,9 +27,8 @@ class Data:
 
 
 class DataProcessor:
-    def __init__(self, sampling=int(1e3), processor=os.cpu_count(), random_seed=42):
+    def __init__(self, processor=os.cpu_count(), random_seed=42):
         self.used_processes: int = processor
-        self.sampling: int = sampling
         self.rng = np.random.default_rng(random_seed)
         self.GEV = 1e3
         self.RMV_EVT = []
@@ -133,7 +132,7 @@ class DataProcessor:
 #  Test codes
 class TestDataProcessor(unittest.TestCase):
     def setUp(self):
-        self.dp = DataProcessor(sampling=1000)
+        self.dp = DataProcessor()
         self.dp.RMV_EVT = []  # Ensure RMV_EVT is empty
 
     def test_get_files_names(self):
