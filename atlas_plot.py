@@ -146,6 +146,7 @@ class Plotter:
         range=[0.3, 0.7],
         title=r"$p_{z}^{\nu\nu}$",
         label=r"$p_{z}^{\nu\nu}$",
+        unit="[unit]",
     ):
 
         fig, ax = plt.subplots(
@@ -180,7 +181,10 @@ class Plotter:
         # ax[1].set_yscale('log')
         ax[1].set_ylim([0, 2])
         ax[1].axhline(1, c="grey", ls="dashed")
-        ax[1].set_xlabel("Scaled " + label + " [unit]")
+        if unit == "[unit]":
+            ax[1].set_xlabel("Scaled " + label + " " + unit)
+        else:
+            ax[1].set_xlabel(label + " " + unit)
         ax[1].set_ylabel("True/Pred")
         ax[1].tick_params(axis="x", pad=9)
         plt.show()
