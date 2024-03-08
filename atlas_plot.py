@@ -185,7 +185,7 @@ class Plotter:
             ax[1].set_xlabel("Scaled " + label + " " + unit)
         else:
             ax[1].set_xlabel(label + " " + unit)
-        ax[1].set_ylabel("True/Pred")
+        ax[1].set_ylabel("Pred/True")
         ax[1].tick_params(axis="x", pad=9)
         plt.show()
 
