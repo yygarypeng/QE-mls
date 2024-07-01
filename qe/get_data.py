@@ -27,7 +27,7 @@ class Data:
 
 
 class DataProcessor:
-    def __init__(self, processor=os.cpu_count(), random_seed=42):
+    def __init__(self, processor=int(0.6*os.cpu_count()), random_seed=42):
         self.used_processes: int = processor
         self.rng = np.random.default_rng(random_seed)
         self.GEV = 1e3

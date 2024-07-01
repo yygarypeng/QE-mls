@@ -171,11 +171,12 @@ class Plotter:
             lw=2,
             color="r",
         )
+        epsilon = 1
         ax[0].set_xlim(range)
         ax[0].legend()
         ax[0].set_ylabel("Counts")
         ax[0].set_title(title)
-        ratio = np.divide(pred_bar, truth_bar, where=(truth_bar != 0))
+        ratio = np.divide(pred_bar+epsilon, truth_bar+epsilon, where=(truth_bar != 0))
         ax[1].vlines(truth_bin[1::], 1, ratio, color="k", lw=1)
         ax[1].scatter(truth_bin[1::], ratio, color="k", lw=1, s=10, label="")
         # ax[1].set_yscale('log')
