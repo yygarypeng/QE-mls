@@ -12,7 +12,7 @@ class Plotter:
     def __init__(self):
         pass
 
-    def plot_loss_history(self, history, logy=False, logx=False, save_name=None):
+    def plot_loss_history(self, history, logy=False, logx=False, loss_name="MSE", save_name=None):
         # Create the subplots
         fig, axs = plt.subplots(
             1,  # if plotting accuracy, change to 2
@@ -32,7 +32,7 @@ class Plotter:
         # )
 
         axs.set_title("Learning curves", fontsize=16)
-        axs.set_ylabel("Loss (MSE)", fontsize=14)
+        axs.set_ylabel(f"Loss {loss_name}", fontsize=14)
         axs.set_xlabel("epoch", fontsize=14)
         # axs[0].set_title("Learning curves", fontsize=16)
         # axs[0].set_ylabel("Loss (MSE)", fontsize=14)
