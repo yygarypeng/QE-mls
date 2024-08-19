@@ -1,6 +1,7 @@
 *npz
 *h5
 *result*
+*.keras
 
 # Byte-compiled / optimized / DLL files
 *logs/
