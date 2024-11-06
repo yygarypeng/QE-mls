@@ -147,6 +147,8 @@ class Plotter:
         title=r"$p_{z}^{\nu\nu}$",
         label=r"$p_{z}^{\nu\nu}$",
         unit="[unit]",
+        bins=50,
+        xpad=0
     ):
 
         fig, ax = plt.subplots(
@@ -158,8 +160,8 @@ class Plotter:
             tight_layout=True,
         )
         ax = ax.flatten()
-        truth_bar, truth_bin = np.histogram(data[0], bins=50, range=range)
-        pred_bar, pred_bin = np.histogram(data[1], bins=50, range=range)
+        truth_bar, truth_bin = np.histogram(data[0], bins=bins, range=range)
+        pred_bar, pred_bin = np.histogram(data[1], bins=bins, range=range)
         hep.histplot(
             truth_bar, truth_bin, label="True " + label, ax=ax[0], lw=2, color="b"
         )
@@ -183,15 +185,15 @@ class Plotter:
         ax[1].set_ylim([0, 2])
         ax[1].axhline(1, c="grey", ls="dashed")
         if unit == "[unit]":
-            ax[1].set_xlabel("Scaled " + label + " " + unit)
+            ax[1].set_xlabel("Scaled " + label + " " + unit, labelpad=xpad)
         else:
-            ax[1].set_xlabel(label + " " + unit)
+            ax[1].set_xlabel(label + " " + unit, labelpad=xpad)
         ax[1].set_ylabel("Pred/True")
         ax[1].tick_params(axis="x", pad=9)
         plt.show()
 
     def plot_2d_histogram(
-        self, pred, truth, title, save_name=None, bins=150, range=None
+        self, pred, truth, title, save_name=None, bins=80, xlabel="Truth", ylabel="Prediction", xpad=0, range=None
     ):
         if range is None:
             range = [
@@ -212,8 +214,8 @@ class Plotter:
         cbar.set_label("Frequency", fontsize=12)
         cbar.ax.tick_params(axis="both", which="both", labelsize=10)
         ax.set_title(title, fontsize=16)
-        ax.set_xlabel("Truth", fontsize=12)
-        ax.set_ylabel("Prediction", fontsize=12)
+        ax.set_xlabel(xlabel, fontsize=12, labelpad=xpad)
+        ax.set_ylabel(ylabel, fontsize=12)
         ax.plot(range, range, color="grey", linestyle="--", alpha=0.8)  # add y=x line
         ax.set_aspect("equal", adjustable="box")
         ax.tick_params(axis="both", labelsize=10)
