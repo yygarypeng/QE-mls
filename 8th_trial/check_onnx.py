@@ -1,5 +1,9 @@
 import onnx
 import onnxruntime as ort
+print(ort.__version__)
+from tensorflow.python.platform import build_info as tf_build_info
+print(tf_build_info.build_info)
+
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
@@ -87,7 +91,7 @@ print(type(obs_kin))
 model_path = '/root/work/QE-mls/8th_trial/ww_resregressor_result/'
 inputs = obs_kin.astype(np.float32)
 # ! GPU broken
-# sess = ort.InferenceSession(model_path, providers=["CUDAExecutionProvider", 'CPUExecutionProvider'])
+# sess = ort.InferenceSession(model_path + "ww_resregressor.onnx", providers=["CUDAExecutionProvider"])
 sess = ort.InferenceSession(model_path + "ww_resregressor.onnx")
 results_ort = sess.run(None, {"inputs": inputs})
 
