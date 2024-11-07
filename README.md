@@ -1,20 +1,3 @@
-# Implementation of DNNs and INNs for the reconstruction of neutrinos
+# Implementation of machine learning to reconstruct W boson restframes from H -> WW -> lvlv decays
 
-This repository includes the code of the dense neural networks and invertible neural networks (Ardizzone et al., 2019) implemented using TensorFlow2 with Keras.
-
-There are a few models in this repository: Our DNNs (AE) and INNs, which are the edited fork from [GitHub](https://github.com/jaekookang/invertible_neural_networks) created by jaekookang.
-
-We use or/and edit it to do the backward reconstruction of di-nutrinos and neutrinos from the fully leptonic decay of the $HWW^{*}$ channel.
-
- 
-2023-11-23 created with MIT license
-
-
-## Original works:
-- Paper: http://arxiv.org/abs/1808.04730
-- Code: 
-    - https://github.com/VLL-HD/analyzing_inverse_problems
-	- https://github.com/jaekookang/invertible_neural_networks
-
-## TODO:
-- [ ] Find some methods to seperate di-neutrinos.
+This repository contains the code to train a machine learning model to reconstruct the W boson restframes from H -> WW -> lvlv decays. The model is trained on the four-momenta of the final state leptons and the missing transverse energy. The model is trained on official mc samples.
