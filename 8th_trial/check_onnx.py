@@ -1,8 +1,10 @@
 import onnx
 import onnxruntime as ort
-print(ort.__version__)
+
+# print(ort.__version__)
 from tensorflow.python.platform import build_info as tf_build_info
-print(tf_build_info.build_info)
+
+# print(tf_build_info.build_info)
 
 import numpy as np
 import pandas as pd
@@ -57,9 +59,9 @@ int_kin = np.concatenate(
     ],
     axis=-1,
 )[0:100_000]
-print("int_kin shape:", int_kin.shape)
+# print("int_kin shape:", int_kin.shape)
 # int_kin = int_kin.to_numpy()  # convert to numpy array
-print(type(int_kin))
+# print(type(int_kin))
 
 ## Observing variables
 obs_kin = np.column_stack(
@@ -78,18 +80,18 @@ obs_kin = np.column_stack(
 )[0:100_000]
 
 # Kinematics of observing variables (inputs for training)
-print("int_kin shape:", obs_kin.shape)
+# print("int_kin shape:", obs_kin.shape)
 # print(print(obs_kin.describe()))
 # obs_kin = obs_kin.to_numpy() # convert to numpy array
 
 ROBUST_OBS = StandardScaler()
 obs_kin = ROBUST_OBS.fit_transform(obs_kin)
-print(type(obs_kin))
-
-
-## Test onnx model 
-model_path = '/root/work/QE-mls/8th_trial/ww_resregressor_result/'
 inputs = obs_kin.astype(np.float32)
+# print(type(obs_kin))
+
+
+## Test onnx model
+model_path = "/root/work/QE-mls/8th_trial/ww_resregressor_result/"
 # ! GPU broken
 # sess = ort.InferenceSession(model_path + "ww_resregressor.onnx", providers=["CUDAExecutionProvider"])
 sess = ort.InferenceSession(model_path + "ww_resregressor.onnx")
@@ -98,8 +100,9 @@ results_ort = sess.run(None, {"inputs": inputs})
 import tensorflow as tf
 
 model = tf.saved_model.load(model_path + "saved_model")
-infer = model.signatures["serving_default"] # Access the serving function
-tf_inputs = tf.convert_to_tensor(inputs.copy())
+# print(list(model.signatures.keys()))
+infer = model.signatures["serving_default"]  # Access the serving function
+tf_inputs = tf.convert_to_tensor(inputs)
 results_tf = infer(tf_inputs)
 
 # Print the results
@@ -111,5 +114,4 @@ print(results_ort)
 # Compare the results
 for ort_res, tf_res in zip(results_ort, results_tf.values()):
     np.testing.assert_allclose(ort_res, tf_res, rtol=1e-3, atol=1e-1)
-    
 print("Results match")
