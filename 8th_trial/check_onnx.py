@@ -113,5 +113,5 @@ print(results_ort)
 
 # Compare the results
 for ort_res, tf_res in zip(results_ort, results_tf.values()):
-    np.testing.assert_allclose(ort_res, tf_res, rtol=1e-3, atol=1e-1)
+    np.testing.assert_allclose(ort_res, tf_res, rtol=1e-2, atol=1e-2)
 print("Results match")

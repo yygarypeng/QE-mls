@@ -2,8 +2,11 @@ from dataclasses import dataclass
 import pandas as pd
 import numpy as np
 
-data_path = "/root/data/recotruth/Truth_Reco_345324_multi_rtag.h5"
+# data_path = "/root/data/recotruth/Truth_Reco_345324_multi_rtag_w.h5"
+# data_path = "/root/data/recotruth/Truth_Reco_345324_multi_rtag_w.h5"
+data_path = "/root/data/recotruth/Truth_Reco_345324_multi_rtag_r9364.h5"
 GEV = 1e-3
+
 
 def pt(px, py):
     return np.sqrt(np.square(px) + np.square(py))
@@ -29,26 +32,26 @@ def m(p4):
 
 @dataclass
 class Lead_lep:
-    px = pd.read_hdf(data_path, "RecoCandLep0")["Px"] * GEV
-    py = pd.read_hdf(data_path, "RecoCandLep0")["Py"] * GEV
-    pz = pd.read_hdf(data_path, "RecoCandLep0")["Pz"] * GEV
-    energy = pd.read_hdf(data_path, "RecoCandLep0")["E"] * GEV
-    pt = pd.read_hdf(data_path, "RecoCandLep0")["Pt"] * GEV
-    eta = pd.read_hdf(data_path, "RecoCandLep0")["Eta"]
-    phi = pd.read_hdf(data_path, "RecoCandLep0")["Phi"]
+    px = pd.read_hdf(data_path, "RecoLep0")["Px"] * GEV
+    py = pd.read_hdf(data_path, "RecoLep0")["Py"] * GEV
+    pz = pd.read_hdf(data_path, "RecoLep0")["Pz"] * GEV
+    energy = pd.read_hdf(data_path, "RecoLep0")["E"] * GEV
+    pt = pd.read_hdf(data_path, "RecoLep0")["Pt"] * GEV
+    eta = pd.read_hdf(data_path, "RecoLep0")["Eta"]
+    phi = pd.read_hdf(data_path, "RecoLep0")["Phi"]
     p4 = np.array([px, py, pz, energy]).T
     p3 = np.array([px, py, pz]).T
 
 
 @dataclass
 class Sublead_lep:
-    px = pd.read_hdf(data_path, "RecoCandLep1")["Px"] * GEV
-    py = pd.read_hdf(data_path, "RecoCandLep1")["Py"] * GEV
-    pz = pd.read_hdf(data_path, "RecoCandLep1")["Pz"] * GEV
-    energy = pd.read_hdf(data_path, "RecoCandLep1")["E"] * GEV
-    pt = pd.read_hdf(data_path, "RecoCandLep1")["Pt"] * GEV
-    eta = pd.read_hdf(data_path, "RecoCandLep1")["Eta"]
-    phi = pd.read_hdf(data_path, "RecoCandLep1")["Phi"]
+    px = pd.read_hdf(data_path, "RecoLep1")["Px"] * GEV
+    py = pd.read_hdf(data_path, "RecoLep1")["Py"] * GEV
+    pz = pd.read_hdf(data_path, "RecoLep1")["Pz"] * GEV
+    energy = pd.read_hdf(data_path, "RecoLep1")["E"] * GEV
+    pt = pd.read_hdf(data_path, "RecoLep1")["Pt"] * GEV
+    eta = pd.read_hdf(data_path, "RecoLep1")["Eta"]
+    phi = pd.read_hdf(data_path, "RecoLep1")["Phi"]
     p4 = np.array([px, py, pz, energy]).T
     p3 = np.array([px, py, pz]).T
 
@@ -71,34 +74,34 @@ class Dilep:
 
 @dataclass
 class Met:
-    px = pd.read_hdf(data_path, "RecoCandMET")["Px"] * GEV
-    py = pd.read_hdf(data_path, "RecoCandMET")["Py"] * GEV
-    phi = pd.read_hdf(data_path, "RecoCandMET")["Phi"]
+    px = pd.read_hdf(data_path, "RecoMET")["Px"] * GEV
+    py = pd.read_hdf(data_path, "RecoMET")["Py"] * GEV
+    phi = pd.read_hdf(data_path, "RecoMET")["Phi"]
     pt = pt(px, py)
 
 
 @dataclass
 class Truth_lead_lep:
-    px = pd.read_hdf(data_path, "TruthCandLepn")["Px"] * GEV
-    py = pd.read_hdf(data_path, "TruthCandLepn")["Py"] * GEV
-    pz = pd.read_hdf(data_path, "TruthCandLepn")["Pz"] * GEV
-    energy = pd.read_hdf(data_path, "TruthCandLepn")["E"] * GEV
-    pt = pd.read_hdf(data_path, "TruthCandLepn")["Pt"] * GEV
-    eta = pd.read_hdf(data_path, "TruthCandLepn")["Eta"]
-    phi = pd.read_hdf(data_path, "TruthCandLepn")["Phi"]
+    px = pd.read_hdf(data_path, "TruthLep0")["Px"] * GEV
+    py = pd.read_hdf(data_path, "TruthLep0")["Py"] * GEV
+    pz = pd.read_hdf(data_path, "TruthLep0")["Pz"] * GEV
+    energy = pd.read_hdf(data_path, "TruthLep0")["E"] * GEV
+    pt = pd.read_hdf(data_path, "TruthLep0")["Pt"] * GEV
+    eta = pd.read_hdf(data_path, "TruthLep0")["Eta"]
+    phi = pd.read_hdf(data_path, "TruthLep0")["Phi"]
     p4 = np.array([px, py, pz, energy]).T
     p3 = np.array([px, py, pz]).T
 
 
 @dataclass
 class Truth_sublead_lep:
-    px = pd.read_hdf(data_path, "TruthCandLepp")["Px"] * GEV
-    py = pd.read_hdf(data_path, "TruthCandLepp")["Py"] * GEV
-    pz = pd.read_hdf(data_path, "TruthCandLepp")["Pz"] * GEV
-    energy = pd.read_hdf(data_path, "TruthCandLepp")["E"] * GEV
-    pt = pd.read_hdf(data_path, "TruthCandLepp")["Pt"] * GEV
-    eta = pd.read_hdf(data_path, "TruthCandLepp")["Eta"]
-    phi = pd.read_hdf(data_path, "TruthCandLepp")["Phi"]
+    px = pd.read_hdf(data_path, "TruthLep1")["Px"] * GEV
+    py = pd.read_hdf(data_path, "TruthLep1")["Py"] * GEV
+    pz = pd.read_hdf(data_path, "TruthLep1")["Pz"] * GEV
+    energy = pd.read_hdf(data_path, "TruthLep1")["E"] * GEV
+    pt = pd.read_hdf(data_path, "TruthLep1")["Pt"] * GEV
+    eta = pd.read_hdf(data_path, "TruthLep1")["Eta"]
+    phi = pd.read_hdf(data_path, "TruthLep1")["Phi"]
     p4 = np.array([px, py, pz, energy]).T
     p3 = np.array([px, py, pz]).T
 
@@ -121,9 +124,9 @@ class Truth_dilep:
 
 @dataclass
 class Truth_met:
-    px = pd.read_hdf(data_path, "TruthCandMET")["Px"] * GEV
-    py = pd.read_hdf(data_path, "TruthCandMET")["Py"] * GEV
-    phi = pd.read_hdf(data_path, "TruthCandMET")["Phi"]
+    px = pd.read_hdf(data_path, "TruthMET")["Px"] * GEV
+    py = pd.read_hdf(data_path, "TruthMET")["Py"] * GEV
+    phi = pd.read_hdf(data_path, "TruthMET")["Phi"]
     pt = pt(px, py)
 
 
@@ -153,3 +156,22 @@ class Sublead_w:
     m = pd.read_hdf(data_path, "TruthW1")["M"] * GEV
     p4 = np.array([px, py, pz, energy]).T
     p3 = np.array([px, py, pz]).T
+
+
+@dataclass
+class MC_weight:
+    w = pd.read_hdf(data_path, "mcWeight")
+
+
+if __name__ == "__main__":
+    print(Lead_lep)
+    print(Sublead_lep)
+    print(Dilep)
+    print(Met)
+    print(Truth_lead_lep)
+    print(Truth_sublead_lep)
+    print(Truth_dilep)
+    print(Truth_met)
+    print(Lead_w)
+    print(Sublead_w)
+    print(MC_weight)
