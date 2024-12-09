@@ -148,7 +148,8 @@ class Plotter:
         label=r"$p_{z}^{\nu\nu}$",
         unit="[unit]",
         bins=50,
-        xpad=0
+        xpad=0,
+        weights=None,
     ):
 
         fig, ax = plt.subplots(
@@ -160,8 +161,8 @@ class Plotter:
             tight_layout=True,
         )
         ax = ax.flatten()
-        truth_bar, truth_bin = np.histogram(data[0], bins=bins, range=range)
-        pred_bar, pred_bin = np.histogram(data[1], bins=bins, range=range)
+        truth_bar, truth_bin = np.histogram(data[0], bins=bins, range=range, weights=weights)
+        pred_bar, pred_bin = np.histogram(data[1], bins=bins, range=range, weights=weights)
         hep.histplot(
             truth_bar, truth_bin, label="True " + label, ax=ax[0], lw=2, color="b"
         )
@@ -193,7 +194,7 @@ class Plotter:
         plt.show()
 
     def plot_2d_histogram(
-        self, pred, truth, title, save_name=None, bins=80, xlabel="Truth", ylabel="Prediction", xpad=0, range=None
+        self, pred, truth, title, save_name=None, bins=80, xlabel="Truth", ylabel="Prediction", xpad=0, range=None, weights=None
     ):
         if range is None:
             range = [
@@ -209,6 +210,7 @@ class Plotter:
             cmap="viridis",
             cmin=1,
             norm=LogNorm(),
+            weights=weights,
         )
         cbar = fig.colorbar(h[3], ax=ax)
         cbar.set_label("Frequency", fontsize=12)
