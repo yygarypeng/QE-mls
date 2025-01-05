@@ -141,60 +141,62 @@ class Plotter:
         plt.close()
 
     def hist(
-        self,
-        data,
-        range=[0.3, 0.7],
-        title=r"$p_{z}^{\nu\nu}$",
-        label=r"$p_{z}^{\nu\nu}$",
-        unit="[unit]",
-        bins=50,
-        xpad=0,
-        weights=None,
-    ):
+            self,
+            data,
+            range=[0.3, 0.7],
+            title=r"$p_{z}^{\nu\nu}$",
+            label=r"$p_{z}^{\nu\nu}$",
+            unit="[unit]",
+            bins=50,
+            xpad=0,
+            weights=None,
+        ):
 
-        fig, ax = plt.subplots(
-            nrows=2,
-            ncols=1,
-            figsize=(8, 8),
-            gridspec_kw={"height_ratios": [6, 2]},
-            sharex=True,
-            tight_layout=True,
-        )
-        ax = ax.flatten()
-        truth_bar, truth_bin = np.histogram(data[0], bins=bins, range=range, weights=weights)
-        pred_bar, pred_bin = np.histogram(data[1], bins=bins, range=range, weights=weights)
-        hep.histplot(
-            truth_bar, truth_bin, label="True " + label, ax=ax[0], lw=2, color="b"
-        )
-        hep.histplot(
-            pred_bar,
-            truth_bin,
-            label="Pred " + label,
-            ax=ax[0],
-            lw=2,
-            color="r",
-        )
-        epsilon = 1
-        ax[0].set_xlim(range)
-        ax[0].legend()
-        ax[0].set_ylabel("Counts")
-        ax[0].set_title(title)
-        ratio = np.divide(pred_bar+epsilon, truth_bar+epsilon, where=(truth_bar != 0))
-        ax[1].vlines(truth_bin[1::], 1, ratio, color="k", lw=1)
-        ax[1].scatter(truth_bin[1::], ratio, color="k", lw=1, s=10, label="")
-        # ax[1].set_yscale('log')
-        ax[1].set_ylim([0, 2])
-        ax[1].axhline(1, c="grey", ls="dashed")
-        if unit == "[unit]":
-            ax[1].set_xlabel("Scaled " + label + " " + unit, labelpad=xpad)
-        else:
-            ax[1].set_xlabel(label + " " + unit, labelpad=xpad)
-        ax[1].set_ylabel("Pred/True")
-        ax[1].tick_params(axis="x", pad=9)
-        plt.show()
+            fig, ax = plt.subplots(
+                nrows=2,
+                ncols=1,
+                figsize=(8, 8),
+                gridspec_kw={"height_ratios": [6, 2]},
+                sharex=True,
+                tight_layout=True,
+            )
+            ax = ax.flatten()
+            truth_bar, truth_bin = np.histogram(data[0], bins=bins, range=range, weights=weights)
+            pred_bar, pred_bin = np.histogram(data[1], bins=bins, range=range, weights=weights)
+            hep.histplot(
+                truth_bar, truth_bin, label="True " + label, ax=ax[0], lw=2, color="b"
+            )
+            hep.histplot(
+                pred_bar,
+                truth_bin,
+                label="Pred " + label,
+                ax=ax[0],
+                lw=2,
+                color="r",
+            )
+            epsilon = 1
+            ax[0].set_xlim(range)
+            ax[0].legend(fontsize=20)
+            ax[0].set_ylabel("Counts", fontsize=22)
+            ax[0].set_title(title, fontsize=26)
+            ratio = np.divide(pred_bar+epsilon, truth_bar+epsilon, where=(truth_bar != 0))
+            ax[1].vlines(truth_bin[1::], 1, ratio, color="k", lw=1)
+            ax[1].scatter(truth_bin[1::], ratio, color="k", lw=1, s=10, label="")
+            # ax[1].set_yscale('log')
+            ax[1].set_ylim([0, 2])
+            ax[1].axhline(1, c="grey", ls="dashed")
+            if unit == "[unit]":
+                ax[1].set_xlabel("Scaled " + label + " " + unit, fontsize=22, labelpad=xpad)
+            else:
+                ax[1].set_xlabel(label + " " + unit, fontsize=22, labelpad=xpad)
+            ax[1].set_ylabel("Pred/True", fontsize=22)
+            ax[1].tick_params(axis="x", pad=10, labelsize=20)
+            ax[1].tick_params(axis="y", labelsize=20)
+            plt.show()
+            plt.close()
 
     def plot_2d_histogram(
-        self, pred, truth, title, save_name=None, bins=80, xlabel="Truth", ylabel="Prediction", xpad=0, range=None, weights=None
+        self, pred, truth, title, save_name=None, bins=80, xlabel="Truth [GeV]", ylabel="Prediction [GeV]", xpad=0, range=None, weights=None
     ):
         if range is None:
             range = [
@@ -213,14 +215,14 @@ class Plotter:
             weights=weights,
         )
         cbar = fig.colorbar(h[3], ax=ax)
-        cbar.set_label("Frequency", fontsize=12)
-        cbar.ax.tick_params(axis="both", which="both", labelsize=10)
-        ax.set_title(title, fontsize=16)
-        ax.set_xlabel(xlabel, fontsize=12, labelpad=xpad)
-        ax.set_ylabel(ylabel, fontsize=12)
+        cbar.set_label("Frequency", fontsize=16)
+        cbar.ax.tick_params(axis="both", which="both", labelsize=16)
+        ax.set_title(title, fontsize=26)
+        ax.set_xlabel(xlabel, fontsize=22, labelpad=xpad)
+        ax.set_ylabel(ylabel, fontsize=22)
         ax.plot(range, range, color="grey", linestyle="--", alpha=0.8)  # add y=x line
         ax.set_aspect("equal", adjustable="box")
-        ax.tick_params(axis="both", labelsize=10)
+        ax.tick_params(axis="both", labelsize=16)
         ax.set_xlim(range)
         ax.set_ylim(range)
         if save_name is not None:
