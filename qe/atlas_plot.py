@@ -75,8 +75,8 @@ class Plotter:
         fig, axs = plt.subplots(
             2,
             1,
-            figsize=(6, 6),
-            dpi=100,
+            figsize=(7, 7),
+            dpi=200,
             sharex=True,
             gridspec_kw={"height_ratios": [3, 1], "hspace": 0.1},
         )
