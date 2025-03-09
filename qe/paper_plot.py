@@ -86,15 +86,15 @@ class Plotter:
                 ax2.annotate(
                     "",
                     xy=(truth_bin[i + 1], 2),
-                    xytext=(truth_bin[i + 1], 2),
-                    arrowprops=dict(facecolor="k", shrink=0.02, width=1, headwidth=3),
+                    xytext=(truth_bin[i + 1], 1.95),
+                    arrowprops=dict(facecolor="k", shrink=0.05, width=1, headwidth=2),
                 )
             elif val <= 0:
                 ax2.annotate(
                     "",
                     xy=(truth_bin[i + 1], 0),
-                    xytext=(truth_bin[i + 1], 0),
-                    arrowprops=dict(facecolor="k", shrink=0.02, width=1, headwidth=3),
+                    xytext=(truth_bin[i + 1], 0.1),
+                    arrowprops=dict(facecolor="k", shrink=0.05, width=1, headwidth=2),
                 )
             else:
                 ax2.scatter(truth_bin[i + 1], val, color="k", lw=1, s=10)
@@ -290,22 +290,24 @@ class Plotter:
             ratio = np.divide(pr_bar + 1, tr_bar + 1, where=(tr_bar != 0))
             ax2.vlines(tr_bin[1:], 1, ratio, color="k", lw=1)
             for j, val in enumerate(ratio):
-                if val >= 2:
+                if val > 2:
+                    # plot the arrowon 2 which force the val to be 1.9 and plot the arrow
                     ax2.annotate(
                         "",
                         xy=(tr_bin[j + 1], 2),
-                        xytext=(tr_bin[j + 1], 2),
+                        xytext=(tr_bin[j + 1], 1.95),
                         arrowprops=dict(
-                            facecolor="k", shrink=0.02, width=1, headwidth=3
+                            facecolor="k", shrink=0.05, width=1, headwidth=2
                         ),
                     )
-                elif val <= 0:
+                elif val < 0:
+                    # do the similar trick!
                     ax2.annotate(
                         "",
                         xy=(tr_bin[j + 1], 0),
-                        xytext=(tr_bin[j + 1], 0),
+                        xytext=(tr_bin[j + 1], 0.05),
                         arrowprops=dict(
-                            facecolor="k", shrink=0.02, width=1, headwidth=3
+                            facecolor="k", shrink=0.05, width=1, headwidth=2
                         ),
                     )
                 else:
@@ -401,7 +403,7 @@ class Plotter:
         fig = plt.figure(figsize=(20, 14))
         # 2 rows x 4 columns (last col for colorbar)
         gs = gridspec.GridSpec(
-            2, 4, width_ratios=[1, 1, 1, 0.05], wspace=0.12, hspace=0.01
+            2, 4, width_ratios=[1, 1, 1, 0.05], wspace=0.12, hspace=0.005
         )
 
         axes = []
@@ -459,12 +461,12 @@ class Plotter:
             ax.xaxis.set_major_formatter(plt.ScalarFormatter(useMathText=True))
             ax.yaxis.set_major_formatter(plt.ScalarFormatter(useMathText=True))
 
-        # Colorbar on last column
+        # # Colorbar on last column
         cax = fig.add_subplot(gs[:, 3])
         cbar = fig.colorbar(last_h, cax=cax, orientation="vertical")
         cbar.ax.text(
-            2.5,
-            28.0,
+            2.7,
+            100.0,
             "Frequency",
             va="top",
             ha="left",
@@ -512,7 +514,7 @@ if __name__ == "__main__":
     # 1D data with -1 to 1 range
     true_list_1d = [np.random.uniform(-1, 1, 10000) for _ in range(6)]
     pred_list_1d = [
-        np.random.normal(0, 0.5, 10000) for _ in range(6)
+        np.random.normal(0, 0.1, 10000) for _ in range(6)
     ]  # Normal distribution centered at 0
     ranges_1d = (-1, 1)  # Set range from -1 to 1
     xlabels_1d = r"$\xi$ [None]"
@@ -536,7 +538,7 @@ if __name__ == "__main__":
 
     # 2D data with -1 to 1 range
     true_list_2d = [np.random.uniform(-1, 1, 10000) for _ in range(6)]
-    pred_list_2d = [np.random.normal(0, 0.5, 10000) for _ in range(6)]
+    pred_list_2d = [np.random.normal(0, 0.1, 10000) for _ in range(6)]
     ranges_2d = (-1, 1)  # Set range from -1 to 1
     xlabels_2d = r"True $\xi$ [None]"
     ylabels_2d = r"Predicted $\xi$ [None]"
