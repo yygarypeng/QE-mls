@@ -5,6 +5,7 @@ import mplhep as hep
 import matplotlib.gridspec as gridspec
 from scipy import stats
 from sklearn.metrics import r2_score
+from mpl_toolkits.axes_grid1 import make_axes_locatable
 
 hep.style.use("ATLAS")
 
@@ -24,7 +25,7 @@ class Plotter:
         xlabel=r"$p_{z}^{\nu\nu}$ [GeV]",
         title="",
         ylabel="Counts",
-        sub_ylabel="Pred/True",
+        legend=["True", "Pred"],
         bins=50,
         xpad=10,
         weights=None,
@@ -61,8 +62,8 @@ class Plotter:
         )
         pred_bar, _ = np.histogram(pred, bins=bins, range=ranges, weights=weights)
 
-        hep.histplot(truth_bar, truth_bin, label="True", ax=ax1, lw=2, color="b")
-        hep.histplot(pred_bar, truth_bin, label="Pred", ax=ax1, lw=2, color="r")
+        hep.histplot(truth_bar, truth_bin, label=f"{legend[0]}", ax=ax1, lw=2, color="b")
+        hep.histplot(pred_bar, truth_bin, label=f"{legend[1]}", ax=ax1, lw=2, color="r")
 
         label_size = 24
         tick_size = 22
@@ -103,7 +104,7 @@ class Plotter:
         ax2.axhline(1, c="grey", ls="dashed", alpha=0.8)
 
         ax2.set_xlabel(xlabel, fontsize=label_size, labelpad=xpad)
-        ax2.set_ylabel(sub_ylabel, fontsize=label_size, loc="center", labelpad=10)
+        ax2.set_ylabel(f"{legend[1]}/{legend[0]}", fontsize=label_size, loc="center", labelpad=10)
 
         ax1.tick_params(axis="y", labelsize=tick_size)
         ax2.tick_params(axis="x", labelsize=tick_size, pad=10)
@@ -129,6 +130,7 @@ class Plotter:
         title=r"",
         bins=50,
         xpad=10,
+        log=False,
         weights=None,
         save_name=None,
         dpi=300,
@@ -160,18 +162,29 @@ class Plotter:
         title_size = 20
 
         fig, ax = plt.subplots(figsize=(8, 8))  # Make the figure square
-        h = ax.hist2d(
-            pred,
-            true,
-            bins=bins,
-            range=[ranges, ranges],
-            cmap="viridis",
-            cmin=1,
-            norm=LogNorm(),
-            weights=weights,
-        )
+        if log:
+            h = ax.hist2d(
+                pred,
+                true,
+                bins=bins,
+                range=[ranges, ranges],
+                cmap="viridis",
+                cmin=1,
+                norm=LogNorm(),
+                weights=weights,
+            )
+        else:
+            h = ax.hist2d(
+                pred,
+                true,
+                bins=bins,
+                range=[ranges, ranges],
+                cmap="viridis",
+                cmin=1,
+                weights=weights,
+            )
         cbar = fig.colorbar(h[3], ax=ax, fraction=0.046, pad=0.04)
-        cbar.set_label("Frequency", fontsize=tick_size)
+        cbar.set_label("", fontsize=tick_size)
         cbar.ax.tick_params(axis="both", which="both", labelsize=tick_size)
         ax.set_title(title, fontsize=title_size, loc="right")
         ax.set_xlabel(xlabel, fontsize=label_size, labelpad=xpad)
@@ -204,7 +217,7 @@ class Plotter:
         xlabel="[unit]",
         title="",
         ylabel="Counts",
-        sub_ylabel="Pred/True",
+        legend_lst=["Pred", "True"],
         bins=50,
         xpad=8,
         weights=None,
@@ -237,6 +250,7 @@ class Plotter:
             title = [title] * 6
         if not isinstance(ylabel, list):
             ylabel = [ylabel] * 6
+        sub_ylabel = f"{legend_lst[0]}/{legend_lst[1]}"
         if not isinstance(sub_ylabel, list):
             sub_ylabel = [sub_ylabel] * 6
 
@@ -271,8 +285,8 @@ class Plotter:
             )
 
             # Plot main hist
-            hep.histplot(tr_bar, tr_bin, ax=ax1, lw=2, color="b", label="True")
-            hep.histplot(pr_bar, tr_bin, ax=ax1, lw=2, color="r", label="Pred")
+            hep.histplot(tr_bar, tr_bin, ax=ax1, lw=2, color="b", label=legend_lst[1])
+            hep.histplot(pr_bar, tr_bin, ax=ax1, lw=2, color="r", label=legend_lst[0])
             ax1.set_xlim(ranges[i])
 
             # Example: RMSE & SEM in the title
@@ -366,6 +380,7 @@ class Plotter:
         ylabel="Y",
         title="",
         bins=50,
+        log=False,
         xpad=15,
         weights=None,
         save_name=None,
@@ -413,7 +428,31 @@ class Plotter:
             ax = fig.add_subplot(gs[row, col])
             axes.append(ax)
 
-        last_h = None
+        # Find global max/min counts for consistent color scaling
+        max_count = 0
+        min_count = float('inf')
+        
+        # Create temporary histograms to find global min/max values
+        for i in range(min(len(true_list), len(pred_list), 6)):
+            hist_vals, _, _ = np.histogram2d(
+                pred_list[i],
+                true_list[i],
+                bins=bins,
+                range=[ranges[i], ranges[i]],
+                weights=weights
+            )
+            max_count = max(max_count, np.max(hist_vals))
+            # Find minimum non-zero value for LogNorm
+            non_zero_min = np.min(hist_vals[hist_vals > 0]) if np.any(hist_vals > 0) else 1
+            min_count = min(min_count, non_zero_min)
+        
+        # Create a shared normalization for all plots
+        if log:
+            norm = LogNorm(vmin=min_count, vmax=max_count)
+        else:
+            norm = None
+
+        # Now create the actual plots with shared normalization
         for i, ax in enumerate(axes):
             row = i // 3
             col = i % 3
@@ -425,10 +464,9 @@ class Plotter:
                 range=[ranges[i], ranges[i]],
                 cmap="viridis",
                 cmin=1,
-                norm=LogNorm(),
+                norm=norm,  # Use the shared normalization
                 weights=weights,
             )
-            last_h = h[3]  # for colorbar
 
             # Diagonal
             ax.plot(ranges[i], ranges[i], "k--", alpha=0.7)
@@ -461,14 +499,18 @@ class Plotter:
             ax.xaxis.set_major_formatter(plt.ScalarFormatter(useMathText=True))
             ax.yaxis.set_major_formatter(plt.ScalarFormatter(useMathText=True))
 
-        # # Colorbar on last column
-        cax = fig.add_subplot(gs[:, 3])
-        cbar = fig.colorbar(last_h, cax=cax, orientation="vertical")
+        # Create a ScalarMappable with the same normalization for the colorbar
+        sm = plt.cm.ScalarMappable(cmap="viridis", norm=norm)
+        sm.set_array([])  # Empty array for the mappable
+        
+        # Colorbar on last column that spans both rows
+        cax = fig.add_subplot(gs[:, 3])  # The [:, 3] spans both rows
+        cbar = fig.colorbar(sm, cax=cax, orientation="vertical")
         cbar.ax.text(
             2.7,
-            100.0,
-            "Frequency",
-            va="top",
+            0.5,  # Center position
+            "",
+            va="center",  # Vertical center alignment
             ha="left",
             rotation=-90,
             fontsize=label_size,
@@ -487,6 +529,248 @@ class Plotter:
         plt.show()
         plt.close()
 
+    ########################
+    # Combined Grid (2×3)
+    ########################
+
+    def hist_combined_grid(
+        self,
+        true_list_1d,
+        pred_list_1d,
+        true_list_2d,
+        pred_list_2d,
+        ranges=(-1, 1),
+        xlabel="X",
+        title="",
+        row1_ylabel="Counts",
+        row1_legend=["Seperable", "SM"],
+        row2_xlabel="True",
+        row2_ylabel="Predicted",
+        bins=50,
+        log=False,
+        xpad=1,
+        weights=None,
+        save_name=None,
+        dpi=300,
+    ):
+        """
+        Plot a 2x3 grid where first row has 1D histograms and second row has 2D histograms.
+        """
+        # Expand single-value parameters to lists if needed
+        if not isinstance(ranges, list):
+            ranges = [ranges] * 3
+        if not isinstance(xlabel, list):
+            xlabel = [xlabel] * 3
+        if not isinstance(title, list):
+            title = [title] * 3
+            
+        label_size = 18
+        tick_size = 14
+        title_size = 18
+        
+        # Create figure with GridSpec layout - including column for colorbar
+        fig = plt.figure(figsize=(18, 14))
+        
+        # Main grid: 2 rows, 4 columns (3 for plots + 1 narrow for colorbar)
+        gs = gridspec.GridSpec(2, 4, width_ratios=[1, 1, 1, 0.05], wspace=0.15, hspace=0.1)
+        
+        # First row: 1D histograms with ratio plots (spans only first 3 columns)
+        first_row_axes = []
+        for col in range(3):
+            # Each 1D plot consists of main plot and ratio subplot
+            inner_gs = gridspec.GridSpecFromSubplotSpec(
+                2, 1, subplot_spec=gs[0, col], height_ratios=[6, 2], hspace=0.08
+            )
+            ax1 = fig.add_subplot(inner_gs[0])  # Main histogram
+            ax2 = fig.add_subplot(inner_gs[1], sharex=ax1)  # Ratio plot
+            first_row_axes.append((ax1, ax2))
+            
+            # Hide x-tick labels on main plot
+            ax1.tick_params(labelbottom=False)
+        
+        # Second row: 2D histograms (also spans only first 3 columns)
+        second_row_axes = []
+        for col in range(3):
+            ax = fig.add_subplot(gs[1, col])
+            second_row_axes.append(ax)
+        
+        # Find global max count for consistent color scaling across all 2D histograms
+        max_count = 0
+        min_count = float('inf')
+        
+        # Create temporary histograms to find max/min counts
+        for i in range(min(len(true_list_2d), len(pred_list_2d), 3)):
+            hist_vals, _, _ = np.histogram2d(
+                pred_list_2d[i],
+                true_list_2d[i],
+                bins=bins,
+                range=[ranges[i], ranges[i]],
+                weights=weights
+            )
+            max_count = max(max_count, np.max(hist_vals))
+            # Find minimum non-zero value for LogNorm
+            non_zero_min = np.min(hist_vals[hist_vals > 0]) if np.any(hist_vals > 0) else 1
+            min_count = min(min_count, non_zero_min)
+        
+        # Create a shared normalization for all 2D plots
+        if log:
+            norm = LogNorm(vmin=min_count, vmax=max_count)
+        else:
+            norm = None
+        
+        # Generate first row (1D histograms with ratios)
+        for i, (ax1, ax2) in enumerate(first_row_axes):
+            # Skip if beyond data range
+            if i >= len(true_list_1d) or i >= len(pred_list_1d):
+                continue
+
+            # Histogram data
+            tr_bar, tr_bin = np.histogram(
+                true_list_1d[i], bins=bins, range=ranges[i], weights=weights
+            )
+            pr_bar, _ = np.histogram(
+                pred_list_1d[i], bins=bins, range=ranges[i], weights=weights
+            )
+
+            # Plot main histogram
+            hep.histplot(tr_bar, tr_bin, ax=ax1, lw=2, color="b", label=row1_legend[1])
+            hep.histplot(pr_bar, tr_bin, ax=ax1, lw=2, color="r", label=row1_legend[0])
+            ax1.set_xlim(ranges[i])
+            
+            # Add statistical metrics to title
+            diff = np.array(pred_list_1d[i]) - np.array(true_list_1d[i])
+            rmse = np.sqrt(np.mean(diff**2))
+            sem = stats.sem(diff)
+            ax1.set_title(
+                f"{title[i]} (RMSE={rmse:.2f} ± {sem:.2f})",
+                fontsize=title_size, 
+                loc="right"
+            )
+            ax1.legend(fontsize=tick_size)
+            
+            # Only leftmost column gets y-label
+            if i == 0:
+                ax1.set_ylabel(row1_ylabel, fontsize=label_size)
+            else:
+                ax1.set_ylabel("")
+                ax1.tick_params(labelleft=False)
+            
+            # Ratio plot
+            ratio = np.divide(pr_bar + 1, tr_bar + 1, where=(tr_bar != 0))
+            ax2.vlines(tr_bin[1:], 1, ratio, color="k", lw=1)
+            
+            # Handle out-of-range ratio values
+            for j, val in enumerate(ratio):
+                if val > 2:
+                    ax2.annotate(
+                        "", 
+                        xy=(tr_bin[j + 1], 2),
+                        xytext=(tr_bin[j + 1], 1.95),
+                        arrowprops=dict(facecolor="k", shrink=0.05, width=1, headwidth=2)
+                    )
+                elif val < 0:
+                    ax2.annotate(
+                        "",
+                        xy=(tr_bin[j + 1], 0),
+                        xytext=(tr_bin[j + 1], 0.05),
+                        arrowprops=dict(facecolor="k", shrink=0.05, width=1, headwidth=2)
+                    )
+                else:
+                    ax2.scatter(tr_bin[j + 1], val, color="k", lw=1, s=10)
+            
+            ax2.set_ylim([0, 2])
+            ax2.axhline(1, c="grey", ls="dashed", alpha=0.8)
+            ax2.set_xlabel(xlabel[i], fontsize=label_size, labelpad=xpad)
+            
+            # Only leftmost column gets y-label
+            if i == 0:
+                ax2.set_ylabel(f"{row1_legend[0]}/{row1_legend[1]}", fontsize=label_size, loc="center", labelpad=10)
+            else:
+                ax2.set_ylabel("")
+                ax2.tick_params(labelleft=False)
+                
+            # Format ticks
+            ax1.tick_params(axis="both", labelsize=tick_size)
+            ax2.tick_params(axis="both", labelsize=tick_size, pad=10)
+        
+        # Generate second row (2D histograms)
+        for i, ax in enumerate(second_row_axes):
+            # Skip if beyond data range
+            if i >= len(true_list_2d) or i >= len(pred_list_2d):
+                continue
+                
+            h = ax.hist2d(
+                pred_list_2d[i],
+                true_list_2d[i],
+                bins=bins,
+                range=[ranges[i], ranges[i]],
+                cmap="viridis",
+                cmin=1,
+                norm=norm,  # Use the shared normalization
+                weights=weights
+            )
+            
+            # Add diagonal line
+            ax.plot(ranges[i], ranges[i], "k--", alpha=0.7)
+            
+            # Add R² score to title
+            r2_val = r2_score(true_list_2d[i], pred_list_2d[i])
+            ax.set_title(
+                f"{title[i]} ($R^2$={r2_val:.2f})",
+                fontsize=title_size,
+                loc="right"
+            )
+            
+            # Format axes
+            ax.set_aspect("equal", adjustable="box")
+            ax.set_xlim(ranges[i])
+            ax.set_ylim(ranges[i])
+            ax.tick_params(axis="both", labelsize=tick_size)
+            
+            # Only leftmost gets y-label
+            if i == 0:
+                ax.set_ylabel(row2_ylabel, fontsize=label_size)
+            else:
+                ax.set_ylabel("")
+                ax.tick_params(labelleft=False)
+                
+            ax.set_xlabel(row2_xlabel, fontsize=label_size, labelpad=xpad)
+            
+            # Format number display
+            ax.xaxis.set_major_formatter(plt.ScalarFormatter(useMathText=True))
+            ax.yaxis.set_major_formatter(plt.ScalarFormatter(useMathText=True))
+
+        # Create colorbar for the 2D plots using the dedicated colorbar column
+        # We need a dummy mappable with the correct normalization
+        sm = plt.cm.ScalarMappable(cmap="viridis", norm=norm)
+        sm.set_array([])  # Empty array for the mappable
+        
+        # Add colorbar in the 4th column, but only for the second row
+        # cax = fig.add_subplot(gs[1, 3])
+
+        # After plotting, finalize layout
+        plt.subplots_adjust(left=0.08, right=0.96, top=0.92, bottom=0.08, wspace=0.15, hspace=0.1)
+
+        # Get the position of the rightmost plot in the second row
+        last_ax_pos = second_row_axes[2].get_position()
+
+        # Add a new axis for the colorbar that matches the height of the last plot
+        cax = fig.add_axes([
+            last_ax_pos.x1 + 0.01,  # right of the last plot
+            last_ax_pos.y0,         # align bottoms
+            0.013,                  # fixed width
+            last_ax_pos.height      # same height
+        ])
+
+        cbar = fig.colorbar(sm, cax=cax)
+        cbar.ax.tick_params(labelsize=tick_size)
+        
+        if save_name:
+            plt.savefig(f"{save_name}.png", dpi=dpi, bbox_inches="tight")
+            print(f"Saved combined grid as {save_name}.png")
+        
+        plt.show()
+        plt.close()
 
 if __name__ == "__main__":
     # Example usage
@@ -559,6 +843,24 @@ if __name__ == "__main__":
         title=titles_2d,
         bins=30,
         save_name="/root/work/QE-mls/qe/2d_grid_test",
+    )
+    plot.hist_combined_grid(
+        true_list_1d,
+        pred_list_1d,
+        true_list_2d,
+        pred_list_2d,
+        ranges=(-1, 1),
+        xlabel="X",
+        title="",
+        row1_ylabel="Counts",
+        row1_legend=["Seperable", "SM"],
+        row2_xlabel="True",
+        row2_ylabel="Predicted",
+        bins=50,
+        xpad=10,
+        weights=None,
+        save_name="/root/work/QE-mls/qe/grid_test",
+        dpi=300,
     )
 
     print("Done!")
