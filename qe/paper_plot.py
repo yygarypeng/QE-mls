@@ -483,6 +483,7 @@ class Plotter:
             ax.xaxis.set_major_formatter(plt.ScalarFormatter(useMathText=True))
             ax.yaxis.set_major_formatter(plt.ScalarFormatter(useMathText=True))
 
+<<<<<<< HEAD
         # Create a ScalarMappable with the same normalization for the colorbar
         sm = plt.cm.ScalarMappable(cmap="viridis", norm=norm)
         sm.set_array([])  # Empty array for the mappable
@@ -495,6 +496,16 @@ class Plotter:
             0.5,  # Center position
             "",
             va="center",  # Vertical center alignment
+=======
+        # # Colorbar on last column
+        cax = fig.add_subplot(gs[:, 3])
+        cbar = fig.colorbar(last_h, cax=cax, orientation="vertical")
+        cbar.ax.text(
+            2.7,
+            100.0,
+            "Frequency",
+            va="top",
+>>>>>>> origin/mtgpu
             ha="left",
             rotation=-90,
             fontsize=label_size,
