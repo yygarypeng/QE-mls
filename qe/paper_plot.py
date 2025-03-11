@@ -130,7 +130,6 @@ class Plotter:
         title=r"",
         bins=50,
         xpad=10,
-        log=False,
         weights=None,
         save_name=None,
         dpi=300,
@@ -162,27 +161,16 @@ class Plotter:
         title_size = 20
 
         fig, ax = plt.subplots(figsize=(8, 8))  # Make the figure square
-        if log:
-            h = ax.hist2d(
-                pred,
-                true,
-                bins=bins,
-                range=[ranges, ranges],
-                cmap="viridis",
-                cmin=1,
-                norm=LogNorm(),
-                weights=weights,
-            )
-        else:
-            h = ax.hist2d(
-                pred,
-                true,
-                bins=bins,
-                range=[ranges, ranges],
-                cmap="viridis",
-                cmin=1,
-                weights=weights,
-            )
+        h = ax.hist2d(
+            pred,
+            true,
+            bins=bins,
+            range=[ranges, ranges],
+            cmap="viridis",
+            cmin=1,
+            norm=LogNorm(),
+            weights=weights,
+        )
         cbar = fig.colorbar(h[3], ax=ax, fraction=0.046, pad=0.04)
         cbar.set_label("", fontsize=tick_size)
         cbar.ax.tick_params(axis="both", which="both", labelsize=tick_size)
@@ -380,7 +368,6 @@ class Plotter:
         ylabel="Y",
         title="",
         bins=50,
-        log=False,
         xpad=15,
         weights=None,
         save_name=None,
@@ -447,10 +434,7 @@ class Plotter:
             min_count = min(min_count, non_zero_min)
         
         # Create a shared normalization for all plots
-        if log:
-            norm = LogNorm(vmin=min_count, vmax=max_count)
-        else:
-            norm = None
+        norm = LogNorm(vmin=min_count, vmax=max_count)
 
         # Now create the actual plots with shared normalization
         for i, ax in enumerate(axes):
@@ -547,7 +531,6 @@ class Plotter:
         row2_xlabel="True",
         row2_ylabel="Predicted",
         bins=50,
-        log=False,
         xpad=1,
         weights=None,
         save_name=None,
@@ -613,10 +596,7 @@ class Plotter:
             min_count = min(min_count, non_zero_min)
         
         # Create a shared normalization for all 2D plots
-        if log:
-            norm = LogNorm(vmin=min_count, vmax=max_count)
-        else:
-            norm = None
+        norm = LogNorm(vmin=min_count, vmax=max_count)
         
         # Generate first row (1D histograms with ratios)
         for i, (ax1, ax2) in enumerate(first_row_axes):
