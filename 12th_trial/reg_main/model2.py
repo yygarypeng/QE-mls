@@ -57,6 +57,7 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "1"  # suppress tensorflow imformation mess
 
 from keras.saving import register_keras_serializable
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 
 # %%
 # ROOT need to be imported after tensorflow
@@ -70,8 +71,8 @@ SEED = 42  # set random seed (global variable)
 GEV = 1e-3
 
 # training variables
-SIGMA_LST=[5.0, 50.0, 200.0, 500.0]
-BATCH_SIZE = 256
+SIGMA_LST=[5.0, 10.0, 100.0, 400.0, 800.0]
+BATCH_SIZE = 512
 EPOCHS = 2048
 LEARNING_RATE = 1e-5
 
@@ -223,13 +224,7 @@ obs_kin = np.column_stack(
         sublead_lep_energy,
         met_px,
         met_py,
-        # met_phi,
-        # dilep_deta,
-        # dilep_dphi,
-        # np.log(sublead_lep.energy),
-        # np.log(lead_lep.energy),
-        # lead_lep.eta,
-        # sublead_lep.eta,
+        # two_part_features
     )
 )
 
@@ -381,6 +376,39 @@ def w_mass_loss_fn(y_true, y_pred):
     w0_true_mass = y_true[..., 8]
     w1_4Vect = y_pred[..., 4:8]
     w1_true_mass = y_true[..., 9]
+    
+    w0_mass = tf.sqrt(
+        tf.math.maximum(
+            tf.abs(
+                tf.square(w0_4Vect[..., 3])
+                - tf.reduce_sum(tf.square(w0_4Vect[..., :3]), axis=-1)
+            ),
+            1e-10,
+        )
+    )
+    w1_mass = tf.sqrt(
+        tf.math.maximum(
+            tf.abs(
+                tf.square(w1_4Vect[..., 3])
+                - tf.reduce_sum(tf.square(w1_4Vect[..., :3]), axis=-1)
+            ),
+            1e-10,
+        )
+    )
+    
+    w0_mae = tf.reduce_mean(tf.abs(w0_mass - w0_true_mass))
+    w1_mae = tf.reduce_mean(tf.abs(w1_mass - w1_true_mass))
+    
+    return w0_mae, w1_mae
+
+def w_mass_mmd_loss_fn(y_true, y_pred):
+    y_pred = tf.cast(y_pred, tf.float32)
+    y_true = tf.cast(y_true, tf.float32)
+
+    w0_4Vect = y_pred[..., :4]
+    w0_true_mass = y_true[..., 8]
+    w1_4Vect = y_pred[..., 4:8]
+    w1_true_mass = y_true[..., 9]
 
     w0_mass = tf.sqrt(
         tf.math.maximum(
@@ -504,6 +532,8 @@ class CustomModel(tf.keras.Model):
         self.metric_dict = {
             "mae_loss": tf.keras.metrics.Mean(name="mae1_loss"),
             "nu_mass_loss": tf.keras.metrics.Mean(name="nu_mass_loss"),
+            "w0_mass_mae_loss": tf.keras.metrics.Mean(name="w0_mass_mae_loss"),
+            "w1_mass_mae_loss": tf.keras.metrics.Mean(name="w1_mass_mae_loss"),
             "w_mass_mmd0_loss": tf.keras.metrics.Mean(name="w_mass_mmd0_loss"),
             "w_mass_mmd1_loss": tf.keras.metrics.Mean(name="w_mass_mmd1_loss"),
             "higgs_mass_loss": tf.keras.metrics.Mean(name="higgs_mass_loss"),
@@ -552,6 +582,8 @@ class CustomModel(tf.keras.Model):
             "mae": 1.0,
             "nu_mass": 0.0,
             "higgs_mass": 0.0,
+            "w0_mass_mae": 0.0,
+            "w1_mass_mae": 0.0,
             "w_mass_mmd0": 0.0,
             "w_mass_mmd1": 0.0,
             "dinu_pt": 0.0,
@@ -572,8 +604,10 @@ class CustomModel(tf.keras.Model):
             "mae": mae_loss_fn(y, outputs),
             "nu_mass": nu_mass_loss_fn(x, outputs),
             "higgs_mass": higgs_mass_loss_fn(outputs),
-            "w_mass_mmd0": w_mass_loss_fn(y, outputs)[0],
-            "w_mass_mmd1": w_mass_loss_fn(y, outputs)[1],
+            "w0_mass_mae": w_mass_loss_fn(y, outputs)[0],
+            "w1_mass_mae": w_mass_loss_fn(y, outputs)[1],
+            "w_mass_mmd0": w_mass_mmd_loss_fn(y, outputs)[0],
+            "w_mass_mmd1": w_mass_mmd_loss_fn(y, outputs)[1],
             "dinu_pt": dinu_pt_loss_fn(x, outputs),
             "neg_r2": neg_r2_loss_fn(y, outputs),
         }
@@ -676,27 +710,28 @@ def residual_block(x, units, activation="swish", dropout_rate=0.0, l2=0.0):
 # %%
 def build_model(input_shape):
     inputs = tf.keras.layers.Input(shape=(input_shape,), dtype=tf.float32)
-    x, y = inputs, inputs
+    x = inputs
 
-    # Extract lepton 4-vectors for Subnet 1
-    lep0 = inputs[..., :4]  # [px, py, pz, e] for leading lepton
-    lep1 = inputs[..., 4:8]  # [px, py, pz, e] for subleading lepton
+    # Extract lepton 4-vectors
+    lep0 = inputs[..., :4]  # Shape: [batch_size, 4]
+    lep1 = inputs[..., 4:8]  # Shape: [batch_size, 4]
 
     # Subnet 1 --> Predict neutrino 3-momenta and apply physics layer
     for _ in range(2):
-        x = residual_block(x, 128, dropout_rate=0.0, l2=1e-4)
-        x = residual_block(x, 64, dropout_rate=0.0, l2=1e-4)
+        x = residual_block(x, 128, dropout_rate=0.4, l2=1e-4)
+        x = residual_block(x, 64, dropout_rate=0.4, l2=1e-4)
     for _ in range(2):
-        # x = residual_block(x, 512, dropout_rate=0.0, l2=1e-4)
-        x = residual_block(x, 256, dropout_rate=0.0, l2=1e-4)
-        x = residual_block(x, 256, dropout_rate=0.0, l2=1e-4)
+        x = residual_block(x, 512, dropout_rate=0.4, l2=1e-4)
+        x = residual_block(x, 256, dropout_rate=0.4, l2=1e-4)
     for _ in range(2):
-        x = residual_block(x, 64, dropout_rate=0.0, l2=1e-4)
-        x = residual_block(x, 32, dropout_rate=0.0, l2=1e-4)
+        x = residual_block(x, 64, dropout_rate=0.4, l2=1e-4)
+        x = residual_block(x, 32, dropout_rate=0.4, l2=1e-4)
+    
     # Bottleneck
     x = tf.keras.layers.Dense(16, activation=None, kernel_initializer="he_normal")(x)
     x = tf.keras.layers.BatchNormalization()(x)
     x = tf.keras.layers.Activation("swish")(x)
+    
     # neutrino layer
     nu_3mom = tf.keras.layers.Dense(
         units=6, activation="linear", kernel_initializer="he_normal"
@@ -705,15 +740,11 @@ def build_model(input_shape):
     # w0 mass layer
     w0_mass = tf.keras.layers.Dense(
         units=1, activation="relu", kernel_initializer="he_normal"
-    )(
-        x
-    )  # always positive
+    )(x)  # always positive
     # w1 mass layer
     w1_mass = tf.keras.layers.Dense(
         units=1, activation="relu", kernel_initializer="he_normal"
-    )(
-        x
-    )  # always positive
+    )(x)  # always positive
 
     # last layer
     outputs = tf.keras.layers.Concatenate()([neutrino_outputs, w0_mass, w1_mass])
@@ -735,6 +766,8 @@ model.compile(
         "mae": 1.0,
         "nu_mass": 0,
         "higgs_mass": 0,
+        "w0_mass_mae": 1.0,
+        "w1_mass_mae": 1.0,
         "w_mass_mmd0": 10.0,
         "w_mass_mmd1": 10.0,
         "dinu_pt": 0,
@@ -810,7 +843,7 @@ else:
 
 try:
     # Save model
-    model.save(dir_name + name + ".tf", save_format="tf", overwrite=True)
+    model.save(dir_name + name + ".keras", save_format="keras", overwrite=True)
     # Save model in saved_model format for ONNX conversion
     tf.saved_model.save(model, savedmodel_path)
     print(f"Model saved in {dir_name}.")
@@ -819,13 +852,12 @@ except Exception as e:
 
 # %%
 model = tf.keras.models.load_model(
-    dir_name + name + ".tf", 
+    dir_name + name + ".keras", 
     custom_objects={
         "CustomModel": CustomModel,
-        "WBosonFourVectorLayer": WBosonFourVectorLayer
+        "WBosonFourVectorLayer": WBosonFourVectorLayer,
     }
 )
-print("Model loaded successfully.")
 
 # predict
 pred_y = model.predict(test_x)
@@ -848,9 +880,13 @@ w_mass_mmd0_loss = history.history["w_mass_mmd0_loss"]
 val_w_mass_mmd0_loss = history.history["val_w_mass_mmd0_loss"]
 w_mass_mmd1_loss = history.history["w_mass_mmd1_loss"]
 val_w_mass_mmd1_loss = history.history["val_w_mass_mmd1_loss"]
+w0_mass_mae_loss = history.history["w0_mass_mae_loss"]
+val_w0_mass_mae_loss = history.history["val_w0_mass_mae_loss"]
+w1_mass_mae_loss = history.history["w1_mass_mae_loss"]
+val_w1_mass_mae_loss = history.history["val_w1_mass_mae_loss"]
 
 # Create figure with shared axes
-fig, axes = plt.subplots(4, 2, figsize=(12, 16), sharex=True, sharey='row')
+fig, axes = plt.subplots(5, 2, figsize=(12, 16), sharex=True, sharey=False)
 
 # 1) Combined Loss
 axes[0, 0].plot(loss, label="Training")
@@ -882,18 +918,18 @@ axes[1, 1].set_title(r"$W^{\ell_1}$ MMD Loss")
 axes[1, 1].legend()
 axes[1, 1].grid(False)
 
-# 5) Higgs Mass Loss (moved to 3rd row)
-axes[2, 0].plot(higgs_mass_loss, label="Training")
-axes[2, 0].plot(val_higgs_mass_loss, label="Validation")
-axes[2, 0].set_title(r"$m_{H}$ Loss")
-axes[2, 0].set_ylabel("Loss")
+# 5) W0 Mass MAE Loss (moved to 5th row)
+axes[2, 0].plot(w0_mass_mae_loss, label="Training")
+axes[2, 0].plot(val_w0_mass_mae_loss, label="Validation")
+axes[2, 0].set_title(r"Derived $m_{W^{\ell_0}}$ MAE Loss")
+axes[2, 0].set_xlabel("Epochs")
 axes[2, 0].legend()
 axes[2, 0].grid(False)
 
-# 6) Dinu Pt Loss (moved to 3rd row)
-axes[2, 1].plot(dinu_pt_loss, label="Training")
-axes[2, 1].plot(val_dinu_pt_loss, label="Validation")
-axes[2, 1].set_title(r"$p^{\nu\nu}_{T}$ Loss")
+# 6) W1 Mass MAE Loss (moved to 5th row)
+axes[2, 1].plot(w1_mass_mae_loss, label="Training")
+axes[2, 1].plot(val_w1_mass_mae_loss, label="Validation")
+axes[2, 1].set_title(r"Derived $m_{W^{\ell_1}}$ MAE Loss")
 axes[2, 1].legend()
 axes[2, 1].grid(False)
 
@@ -901,7 +937,6 @@ axes[2, 1].grid(False)
 axes[3, 0].plot(nu_mass_loss, label="Training")
 axes[3, 0].plot(val_nu_mass_loss, label="Validation")
 axes[3, 0].set_title(r"$m_{\nu}$ Loss")
-axes[3, 0].set_xlabel("Epochs")
 axes[3, 0].set_ylabel("Loss")
 axes[3, 0].legend()
 axes[3, 0].grid(False)
@@ -911,10 +946,28 @@ axes[3, 0].tick_params(axis='x', rotation=45)
 axes[3, 1].plot(neg_r2_loss, label="Training")
 axes[3, 1].plot(val_neg_r2_loss, label="Validation")
 axes[3, 1].set_title(r"-$R^2$ Loss")
-axes[3, 1].set_xlabel("Epochs")
 axes[3, 1].legend()
 axes[3, 1].grid(False)
 axes[3, 1].tick_params(axis='x', rotation=45)
+
+# 9) Higgs Mass Loss (moved to 3rd row)
+axes[4, 0].plot(higgs_mass_loss, label="Training")
+axes[4, 0].plot(val_higgs_mass_loss, label="Validation")
+axes[4, 0].set_title(r"$m_{H}$ Loss")
+axes[4, 0].set_ylabel("Loss")
+axes[4, 0].set_xlabel("Epochs", labelpad=10)
+axes[4, 0].tick_params(axis='x', rotation=45)
+axes[4, 0].legend()
+axes[4, 0].grid(False)
+
+# 10) Dinu Pt Loss (moved to 3rd row)
+axes[4, 1].plot(dinu_pt_loss, label="Training")
+axes[4, 1].plot(val_dinu_pt_loss, label="Validation")
+axes[4, 1].set_title(r"$p^{\nu\nu}_{T}$ Loss")
+axes[4, 1].set_xlabel("Epochs", labelpad=10)
+axes[4, 1].tick_params(axis='x', rotation=45)
+axes[4, 1].legend()
+axes[4, 1].grid(False)
 
 # Adjust spacing between subplots
 plt.tight_layout()
@@ -935,8 +988,8 @@ print(f"{dir_name + name}_data.npz has been saved.")
 
 # %%
 # neutrino mass checking
-nu0_4vect = sig_pred_inv[:, :4] - test_x[:, :4]
-nu1_4vect = sig_pred_inv[:, 4:8] - test_x[:, 4:8]
+nu0_4vect = sig_pred_inv[:, :4] - (test_x[:, :4])
+nu1_4vect = sig_pred_inv[:, 4:8] - (test_x[:, 4:8])
 nu0_mass_squared = (
     np.square(nu0_4vect[:, 3])
     - np.square(nu0_4vect[:, 0])
