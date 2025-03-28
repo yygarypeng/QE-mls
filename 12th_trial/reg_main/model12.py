@@ -71,8 +71,8 @@ SEED = 42  # set random seed (global variable)
 GEV = 1e-3
 
 # training variables
-SIGMA_LST=[5.0, 10.0, 100.0, 400.0, 800.0]
-BATCH_SIZE = 512
+SIGMA_LST=[1.0, 5.0, 10.0, 100.0, 400.0, 800.0]
+BATCH_SIZE = 256
 EPOCHS = 2048
 LEARNING_RATE = 1e-5
 
@@ -505,13 +505,13 @@ def higgs_mass_loss_fn(y_pred):
 
 
 def mae_loss_fn(y_true, y_pred):
-    y_true = tf.cast(y_true, tf.float32)[:, 0:8]
+    y_true = tf.cast(y_true, tf.float32)[:, 0:8] # only interested in 4-vectors
     y_pred = tf.cast(y_pred, tf.float32)[:, 0:8]
     return tf.reduce_mean(tf.keras.losses.mae(y_true, y_pred))
 
 
 def neg_r2_loss_fn(y_true, y_pred):
-    y_true = tf.cast(y_true, tf.float32)[:, 0:8]
+    y_true = tf.cast(y_true, tf.float32)[:, 0:8] # only interested in 4-vectors
     y_pred = tf.cast(y_pred, tf.float32)[:, 0:8]
     # minimize the negative r2 score
     return (
@@ -716,25 +716,19 @@ def build_model(input_shape):
     lep0 = inputs[..., :4]  # Shape: [batch_size, 4]
     lep1 = inputs[..., 4:8]  # Shape: [batch_size, 4]
 
-    # # Subnet 1 --> Predict neutrino 3-momenta and apply physics layer
+    # Subnet 1 --> Predict neutrino 3-momenta and apply physics layer
+    for _ in range(2):
+        x = residual_block(x, 64, dropout_rate=0.4, l2=1e-4)
+        x = residual_block(x, 128, dropout_rate=0.4, l2=1e-4)
+    for _ in range(2):
+        x = residual_block(x, 256, dropout_rate=0.4, l2=1e-4)
+        x = residual_block(x, 256, dropout_rate=0.4, l2=1e-4)
     # for _ in range(2):
-    #     x = residual_block(x, 128, dropout_rate=0.1, l2=1e-4)
-    #     x = residual_block(x, 128, dropout_rate=0.1, l2=1e-4)
-    # for _ in range(2):
-    #     x = residual_block(x, 256, dropout_rate=0.1, l2=1e-4)
-    #     x = residual_block(x, 256, dropout_rate=0.1, l2=1e-4)
-    # for _ in range(2):
-    #     x = residual_block(x, 64, dropout_rate=0.1, l2=1e-4)
-    #     x = residual_block(x, 64, dropout_rate=0.1, l2=1e-4)
+    #     x = residual_block(x, 256, dropout_rate=0.4, l2=1e-4)
+    #     x = residual_block(x, 128, dropout_rate=0.4, l2=1e-4)
     for _ in range(2):
         x = residual_block(x, 128, dropout_rate=0.4, l2=1e-4)
         x = residual_block(x, 64, dropout_rate=0.4, l2=1e-4)
-    for _ in range(2):
-        x = residual_block(x, 512, dropout_rate=0.4, l2=1e-4)
-        x = residual_block(x, 256, dropout_rate=0.4, l2=1e-4)
-    for _ in range(2):
-        x = residual_block(x, 64, dropout_rate=0.4, l2=1e-4)
-        x = residual_block(x, 32, dropout_rate=0.4, l2=1e-4)
         
     # Bottleneck
     x = tf.keras.layers.Dense(16, activation=None, kernel_initializer="he_normal")(x)
@@ -748,11 +742,11 @@ def build_model(input_shape):
     neutrino_outputs = WBosonFourVectorLayer()([lep0, lep1, nu_3mom])
     # w0 mass layer
     w0_mass = tf.keras.layers.Dense(
-        units=1, activation="relu", kernel_initializer="he_normal"
+        units=1, activation="swish", kernel_initializer="he_normal"
     )(x)  # always positive
     # w1 mass layer
     w1_mass = tf.keras.layers.Dense(
-        units=1, activation="relu", kernel_initializer="he_normal"
+        units=1, activation="swish", kernel_initializer="he_normal"
     )(x)  # always positive
 
     # last layer
@@ -778,7 +772,7 @@ model.compile(
         "w0_mass_mae": 0.0,
         "w1_mass_mae": 0.0,
         "w_mass_mmd0": 10.0,
-        "w_mass_mmd1": 10.0,
+        "w_mass_mmd1": 20.0,
         "dinu_pt": 0,
         "neg_r2": 0,
     },

@@ -175,6 +175,7 @@ class Plotter:
         legend_lst=["Pred", "True"],
         bins=50,
         xpad=8,
+        rmse_title=False,
         weights=None,
         save_name=None,
         dpi=300,
@@ -224,11 +225,14 @@ class Plotter:
             hep.histplot(tr_bar, tr_bin, ax=ax1, lw=2, color="b", label=legend_lst[1])
             hep.histplot(pr_bar, tr_bin, ax=ax1, lw=2, color="r", label=legend_lst[0])
             ax1.set_xlim(ranges[i])
-
-            diff = np.array(pred_list[i]) - np.array(true_list[i])
-            rmse = np.sqrt(np.mean(diff**2))
-            sem = stats.sem(diff)
-            ax1.set_title(f"{title[i]} (RMSE={rmse:.2f} ± {sem:.2f})", fontsize=title_size, loc="right")
+            
+            if rmse_title is True:
+                diff = np.array(pred_list[i]) - np.array(true_list[i])
+                rmse = np.sqrt(np.mean(diff**2))
+                sem = stats.sem(diff)
+                ax1.set_title(f"{title[i]} (RMSE={rmse:.2f} ± {sem:.2f})", fontsize=title_size, loc="right")
+            else:
+                ax1.set_title(title[i], fontsize=title_size, loc="right")
             ax1.legend(fontsize=tick_size)
 
             ratio = np.divide(pr_bar + 1, tr_bar + 1, where=(tr_bar != 0))
@@ -422,6 +426,7 @@ class Plotter:
         bins=50,
         log=True,
         xpad=10,
+        rmse_title=False,
         weights=None,
         save_name=None,
         dpi=300,
@@ -498,10 +503,13 @@ class Plotter:
             hep.histplot(pr_bar, tr_bin, ax=ax1, lw=2, color="r", label=row1_legend[0])
             ax1.set_xlim(ranges[i])
 
-            diff = np.array(pred_list_1d[i]) - np.array(true_list_1d[i])
-            rmse = np.sqrt(np.mean(diff**2))
-            sem = stats.sem(diff)
-            ax1.set_title(f"{title[i]} (RMSE={rmse:.2f} ± {sem:.2f})", fontsize=title_size, loc="right")
+            if rmse_title is True:
+                diff = np.array(pred_list_1d[i]) - np.array(true_list_1d[i])
+                rmse = np.sqrt(np.mean(diff**2))
+                sem = stats.sem(diff)
+                ax1.set_title(f"{title[i]} (RMSE={rmse:.2f} ± {sem:.2f})", fontsize=title_size, loc="right")
+            else:
+                ax1.set_title(title[i], fontsize=title_size, loc="right")
             ax1.legend(fontsize=tick_size)
 
             if i == 0:
@@ -616,6 +624,7 @@ class Plotter:
         row1_legend=["Separable", "SM"],
         bins=50,
         xpad=10,
+        rmse_title=False,
         weights=None,
         save_name=None,
         dpi=300,
@@ -668,10 +677,13 @@ class Plotter:
             hep.histplot(pr_bar, tr_bin, ax=ax1, lw=2, color="r", label=row1_legend[0])
             ax1.set_xlim(ranges[i])
 
-            diff = np.array(pred_list_1d[i]) - np.array(true_list_1d[i])
-            rmse = np.sqrt(np.mean(diff**2))
-            sem = stats.sem(diff)
-            ax1.set_title(f"{title[i]} (RMSE={rmse:.2f} ± {sem:.2f})", fontsize=title_size, loc="right")
+            if rmse_title is True:
+                diff = np.array(pred_list_1d[i]) - np.array(true_list_1d[i])
+                rmse = np.sqrt(np.mean(diff**2))
+                sem = stats.sem(diff)
+                ax1.set_title(f"{title[i]} (RMSE={rmse:.2f} ± {sem:.2f})", fontsize=title_size, loc="right")
+            else:
+                ax1.set_title(title[i], fontsize=title_size, loc="right")
             ax1.legend(fontsize=tick_size)
 
             if i == 0:
