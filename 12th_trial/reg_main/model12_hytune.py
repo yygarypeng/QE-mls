@@ -62,13 +62,24 @@ SEED = 42  # set random seed (global variable)
 GEV = 1e-3
 # training variables
 SIGMA_LST = [1.0, 5.0, 10.0, 100.0, 400.0, 800.0]
-BATCH_SIZE = 256
+BATCH_SIZE = 512
 EPOCHS = 2048
 # LEARNING_RATE = 1e-5
 # Make a directory
 dir_name = HOME_PATH + "/12th_trial/reg_main/ww_resregressor_result12_hytune/"
 savedmodel_path = dir_name + "saved_model"
 name = "ww_resregressor"
+
+import shutil
+
+if os.path.exists(dir_name + "hyperband_dir"):
+    if os.path.isdir(dir_name + "hyperband_dir"):
+        shutil.rmtree(dir_name + "hyperband_dir")
+        print(f"Directory '{dir_name}/hyperband_dir' has been removed.")
+    else:
+        os.remove(dir_name + "hyperband_dir")
+        print(f"File '{dir_name}/hyperband_dir' has been removed.")
+
 
 # %%
 # reco
@@ -396,7 +407,7 @@ class CustomModel(tf.keras.Model):
         super().compile(optimizer=optimizer, **kwargs)
         default_weights = {
             "mae": 1.0, "nu_mass": 0.0, "higgs_mass": 0.0, "w0_mass_mae": 0.0, "w1_mass_mae": 0.0,
-            "w_mass_mmd0": 0.0, "w_mass_mmd1": 0.0, "dinu_pt": 0.0, "neg_r2": 0.0, "fused_output": 0.0,
+            "w_mass_mmd0": 0.0, "w_mass_mmd1": 0.0, "dinu_pt": 0.0, "neg_r2": 0.0,
         }
         self.loss_weights = {**default_weights, **(loss_weights or {})}
 
@@ -500,9 +511,9 @@ def build_hypermodel(hp):
     learning_rate = 1e-5
     # dropout_rate = hp.Float('dropout_rate', min_value=0.0, max_value=0.5, step=0.1)
     dropout_rate = 0.4
-    # l2_reg = hp.Float('l2_reg', min_value=1e-4, max_value=1e-2, sampling='log')
-    l2_reg = 1e-4
-    units_base = hp.Int('units_base', min_value=32, max_value=512, step=32)
+    l2_reg = hp.Float('l2_reg', min_value=1e-4, max_value=1e-2, sampling='log')
+    # l2_reg = 1e-4
+    units_base = hp.Int('units_base', min_value=16, max_value=64, step=4)
 
     inputs = tf.keras.layers.Input(shape=(input_shape,), dtype=tf.float32)
     x = inputs

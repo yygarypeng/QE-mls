@@ -57,7 +57,6 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "1"  # suppress tensorflow imformation mess
 
 from keras.saving import register_keras_serializable
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
 
 # %%
 # ROOT need to be imported after tensorflow
@@ -67,13 +66,13 @@ from ROOT import TLorentzVector, TVector3
 # some global variables
 plot = pp.Plotter()
 WORKERS = 16
-SEED = 42  # set random seed (global variable)
+SEED = 114  # set random seed (global variable)
 GEV = 1e-3
 
 # training variables
-SIGMA_LST=[1.0, 5.0, 10.0, 100.0, 400.0, 800.0]
-BATCH_SIZE = 256
-EPOCHS = 2048
+SIGMA_LST=[5.0, 10.0, 100.0, 500.0]
+BATCH_SIZE = 512
+EPOCHS = 1
 LEARNING_RATE = 1e-5
 
 # %%
@@ -520,6 +519,7 @@ def neg_r2_loss_fn(y_true, y_pred):
         - 1
     )
 
+
 # %%
 @register_keras_serializable(package="ww_regressor")
 class CustomModel(tf.keras.Model):
@@ -527,10 +527,8 @@ class CustomModel(tf.keras.Model):
         super().__init__()
         self.base_model = base_model
         self.current_epoch = tf.Variable(0.0, trainable=False)
-
-        # Initialize metrics dictionary with lambda_weight
         self.metric_dict = {
-            "mae_loss": tf.keras.metrics.Mean(name="mae1_loss"),
+            "mae_loss": tf.keras.metrics.Mean(name="mae_loss"),
             "nu_mass_loss": tf.keras.metrics.Mean(name="nu_mass_loss"),
             "w0_mass_mae_loss": tf.keras.metrics.Mean(name="w0_mass_mae_loss"),
             "w1_mass_mae_loss": tf.keras.metrics.Mean(name="w1_mass_mae_loss"),
@@ -542,64 +540,74 @@ class CustomModel(tf.keras.Model):
             "loss": tf.keras.metrics.Mean(name="loss"),
         }
 
+    def build(self, input_shape):
+        """Build the model by delegating to the base_model."""
+        self.base_model.build(input_shape)
+        super().build(input_shape)  # Call the parent class's build to finalize
+
     def call(self, inputs, training=None):
         return self.base_model(inputs, training=training)
 
     def get_config(self):
-        # Grab parent config (includes trainable, dtype, etc.)
-        config = super().get_config()
-        # Serialize base_model
-        config["base_model"] = tf.keras.utils.serialize_keras_object(self.base_model)
-        return config
+            config = super().get_config()
+            config["base_model"] = tf.keras.utils.serialize_keras_object(self.base_model)
+            return config
 
     @classmethod
     def from_config(cls, config, custom_objects=None):
-        # Extract the base_model config and remove other keras-specific params
         base_model_config = config.pop("base_model", None)
-
-        # Remove standard keras params that aren't needed for your __init__
-        # These are automatically included in the config but not used by your constructor
         for key in ["name", "trainable", "dtype"]:
-            if key in config:
-                config.pop(key)
-
+            config.pop(key, None)
         if base_model_config is not None:
             base_model = tf.keras.utils.deserialize_keras_object(
                 base_model_config, custom_objects=custom_objects
             )
         else:
-            # Fallback: create a new base_model or raise an error
-            raise ValueError(
-                "No 'base_model' found in config—cannot rebuild the original model."
-            )
-
-        # Now only pass the base_model and any custom params that your __init__ accepts
+            raise ValueError("No 'base_model' found in config.")
         return cls(base_model=base_model)
 
-    def compile(self, optimizer, loss_weights=None, **kwargs):
-        super().compile(optimizer=optimizer, **kwargs)
-        default_weights = {
-            "mae": 1.0,
-            "nu_mass": 0.0,
-            "higgs_mass": 0.0,
-            "w0_mass_mae": 0.0,
-            "w1_mass_mae": 0.0,
-            "w_mass_mmd0": 0.0,
-            "w_mass_mmd1": 0.0,
-            "dinu_pt": 0.0,
-            "neg_r2": 0.0,
-            "fused_output": 0.0,
+    def get_compile_config(self):
+        return {
+            "optimizer": tf.keras.utils.serialize_keras_object(self.optimizer),
+            "loss_weights": self.loss_weights,
+            "jit_compile": getattr(self, "_jit_compile", False),
+            "steps_per_execution": self.steps_per_execution  # Use instance variable
         }
-        self.loss_weights = {**default_weights, **(loss_weights or {})}
+
+    def compile_from_config(self, config):
+            optimizer_config = config["optimizer"]
+            optimizer = tf.keras.utils.deserialize_keras_object(
+                optimizer_config,
+                custom_objects={"Adam": tf.keras.optimizers.Adam}
+            )
+            # Rebuild optimizer state by recompiling with the base model
+            self.compile(
+                optimizer=optimizer,
+                loss_weights=config.get("loss_weights", None),
+                jit_compile=config.get("jit_compile", False),
+                steps_per_execution=config.get("steps_per_execution", 1)
+            )
+            # Ensure optimizer is aware of all trainable variables
+            self.optimizer.build(self.trainable_variables)
+
+    def compile(self, optimizer, loss_weights=None, steps_per_execution=1, **kwargs):
+            super().compile(optimizer=optimizer, **kwargs)
+            default_weights = {
+                "mae": 1.0, "nu_mass": 0.0, "higgs_mass": 0.0, "w0_mass_mae": 0.0,
+                "w1_mass_mae": 0.0, "w_mass_mmd0": 0.0, "w_mass_mmd1": 0.0,
+                "dinu_pt": 0.0, "neg_r2": 0.0,
+            }
+            self.loss_weights = {**default_weights, **(loss_weights or {})}
+            self.steps_per_execution = steps_per_execution
+            # Ensure optimizer is built with all trainable variables
+            self.optimizer.build(self.trainable_variables)
 
     @property
     def metrics(self):
         return list(self.metric_dict.values())
 
     def _compute_losses(self, x, y, predictions):
-        # Unpack four outputs: [fused_output, nu_mass_output, mae_output, lambda_weight]
         outputs = predictions
-
         losses = {
             "mae": mae_loss_fn(y, outputs),
             "nu_mass": nu_mass_loss_fn(x, outputs),
@@ -611,41 +619,31 @@ class CustomModel(tf.keras.Model):
             "dinu_pt": dinu_pt_loss_fn(x, outputs),
             "neg_r2": neg_r2_loss_fn(y, outputs),
         }
-
-        total_loss = tf.add_n(
-            [self.loss_weights[name] * loss for name, loss in losses.items()]
-        )
-
+        total_loss = tf.add_n([self.loss_weights[name] * loss for name, loss in losses.items()])
         return total_loss, losses
 
     def _update_metrics(self, total_loss, losses):
-        """Helper method to update metrics"""
         self.metric_dict["loss"].update_state(total_loss)
         for name, loss in losses.items():
             self.metric_dict[f"{name}_loss"].update_state(loss)
-        # self.metric_dict['lambda_weight'].update_state(tf.reduce_mean(lambda_weight))  # Track mean
 
     def train_step(self, data):
         x, y = data
         with tf.GradientTape() as tape:
             predictions = self(x, training=True)
             total_loss, losses = self._compute_losses(x, y, predictions)
-
         gradients = tape.gradient(total_loss, self.trainable_variables)
         self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
-
         self._update_metrics(total_loss, losses)
-
         return {name: metric.result() for name, metric in self.metric_dict.items()}
 
     def test_step(self, data):
         x, y = data
         predictions = self(x, training=False)
         total_loss, losses = self._compute_losses(x, y, predictions)
-
         self._update_metrics(total_loss, losses)
-
         return {name: metric.result() for name, metric in self.metric_dict.items()}
+
 
 # %%
 @register_keras_serializable(package="nu_regressor")
@@ -655,8 +653,8 @@ class WBosonFourVectorLayer(tf.keras.layers.Layer):
 
     def call(self, inputs):
         lep0, lep1, nu_3mom = inputs
-        nu0_3mom = nu_3mom[..., :3]  # [px, py, pz] for nu0
-        nu1_3mom = nu_3mom[..., 3:]  # [px, py, pz] for nu1
+        nu0_3mom = nu_3mom[..., :3]
+        nu1_3mom = nu_3mom[..., 3:]
         nu0_p_squared = tf.reduce_sum(tf.square(nu0_3mom), axis=-1, keepdims=True)
         nu1_p_squared = tf.reduce_sum(tf.square(nu1_3mom), axis=-1, keepdims=True)
         nu0_energy = tf.sqrt(tf.maximum(nu0_p_squared, 1e-10))
@@ -671,8 +669,7 @@ class WBosonFourVectorLayer(tf.keras.layers.Layer):
         return (input_shape[0][0], 8)
 
     def get_config(self):
-        config = super(WBosonFourVectorLayer, self).get_config()
-        return config
+        return super().get_config()
 
     @classmethod
     def from_config(cls, config):
@@ -691,7 +688,6 @@ def dense_dropout_block(x, units, activation="swish", dropout_rate=0.0, l2=0.0):
     if dropout_rate > 0:
         x = tf.keras.layers.Dropout(rate=dropout_rate)(x)
     return x
-
 
 def residual_block(x, units, activation="swish", dropout_rate=0.0, l2=0.0):
     y = dense_dropout_block(
@@ -718,18 +714,18 @@ def build_model(input_shape):
 
     # Subnet 1 --> Predict neutrino 3-momenta and apply physics layer
     for _ in range(2):
-        x = residual_block(x, 64, dropout_rate=0.4, l2=1e-4)
+        x = residual_block(x, 256, dropout_rate=0.4, l2=1e-4)
         x = residual_block(x, 128, dropout_rate=0.4, l2=1e-4)
     for _ in range(2):
+        # x = residual_block(x, 128, dropout_rate=0.4, l2=1e-4)
         x = residual_block(x, 256, dropout_rate=0.4, l2=1e-4)
-        x = residual_block(x, 256, dropout_rate=0.4, l2=1e-4)
-    # for _ in range(2):
-    #     x = residual_block(x, 256, dropout_rate=0.4, l2=1e-4)
-    #     x = residual_block(x, 128, dropout_rate=0.4, l2=1e-4)
     for _ in range(2):
         x = residual_block(x, 128, dropout_rate=0.4, l2=1e-4)
+        # x = residual_block(x, 64, dropout_rate=0.4, l2=1e-4)
+    for _ in range(2):
         x = residual_block(x, 64, dropout_rate=0.4, l2=1e-4)
-        
+        x = residual_block(x, 128, dropout_rate=0.4, l2=1e-4)
+    
     # Bottleneck
     x = tf.keras.layers.Dense(16, activation=None, kernel_initializer="he_normal")(x)
     x = tf.keras.layers.BatchNormalization()(x)
@@ -742,11 +738,11 @@ def build_model(input_shape):
     neutrino_outputs = WBosonFourVectorLayer()([lep0, lep1, nu_3mom])
     # w0 mass layer
     w0_mass = tf.keras.layers.Dense(
-        units=1, activation="swish", kernel_initializer="he_normal"
+        units=1, activation="relu", kernel_initializer="he_normal"
     )(x)  # always positive
     # w1 mass layer
     w1_mass = tf.keras.layers.Dense(
-        units=1, activation="swish", kernel_initializer="he_normal"
+        units=1, activation="relu", kernel_initializer="he_normal"
     )(x)  # always positive
 
     # last layer
@@ -759,7 +755,6 @@ def build_model(input_shape):
 input_shape = train_x.shape[-1]
 base_model = build_model(input_shape)
 model = CustomModel(base_model)
-model.build((None, input_shape))
 model.summary()
 
 # Model compilation with weights dictionary
@@ -771,12 +766,12 @@ model.compile(
         "higgs_mass": 0,
         "w0_mass_mae": 0.0,
         "w1_mass_mae": 0.0,
-        "w_mass_mmd0": 10.0,
-        "w_mass_mmd1": 20.0,
+        "w_mass_mmd0": 7.5,
+        "w_mass_mmd1": 7.5,
         "dinu_pt": 0,
         "neg_r2": 0,
     },
-    jit_compile=True,
+    jit_compile=False,
     steps_per_execution=256,
 )
 
@@ -794,7 +789,7 @@ class LambdaTracker(tf.keras.callbacks.Callback):
         log_str = f"Epoch {epoch_num}"
         # Log all metrics
         for name, value in logs.items():
-            log_str += f"; {name}: {value:.4f}"
+            log_str += f"; {name}: {value:.2f}"
         print(log_str)
 
 
@@ -846,7 +841,7 @@ else:
 
 try:
     # Save model
-    model.save(dir_name + name + ".keras", save_format="keras", overwrite=True)
+    model.save(dir_name + name + ".keras", overwrite=True)
     # Save model in saved_model format for ONNX conversion
     tf.saved_model.save(model, savedmodel_path)
     print(f"Model saved in {dir_name}.")
@@ -889,7 +884,7 @@ w1_mass_mae_loss = history.history["w1_mass_mae_loss"]
 val_w1_mass_mae_loss = history.history["val_w1_mass_mae_loss"]
 
 # Create figure with shared axes
-fig, axes = plt.subplots(5, 2, figsize=(12, 16), sharex=True, sharey=False)
+fig, axes = plt.subplots(5, 2, figsize=(12, 16), dpi=500, sharex=True, sharey=False)
 
 # 1) Combined Loss
 axes[0, 0].plot(loss, label="Training")
@@ -974,7 +969,7 @@ axes[4, 1].grid(False)
 
 # Adjust spacing between subplots
 plt.tight_layout()
-plt.savefig(dir_name + name + "_loss.png")
+plt.savefig(dir_name + name + "_loss.png", dpi=500)
 plt.show()
 plt.close()
 
@@ -1016,7 +1011,6 @@ plt.close()
 
 print("nu0_mass_squared avg:", np.mean(nu0_mass_squared))
 print("nu1_mass_squared avg:", np.mean(nu1_mass_squared))
-# plt.hist(nu1_mass_squared, bins=100, range=(0, 100), histtype="step", label="nu1_mass_squared")
 
 # %%
 lead_time_like = np.square(sig_pred_inv[:, 3]) - np.sum(
@@ -1028,312 +1022,11 @@ sublead_time_like = np.square(sig_pred_inv[:, 7]) - np.sum(
 )
 sublead_time_mask = (sublead_time_like > 0) * 1
 
-bin_edges = np.linspace(-5, 1.0e4, 51)
-figure = plt.figure(figsize=(10, 8))
-plt.hist(
-    lead_time_like,
-    bins=bin_edges,
-    fill=False,
-    color="tab:orange",
-    histtype="step",
-    label=r"$W^{0}$, "
-    + f"{100 * np.sum(lead_time_mask) / len(lead_time_mask):.2f} % TL",
-    density=True,
-    weights=None,
-    linewidth=2,
-)
-plt.hist(
-    sublead_time_like,
-    bins=bin_edges,
-    fill=False,
-    color="tab:blue",
-    histtype="step",
-    label=r"$W^{1}$, "
-    + f"{100 * np.sum(sublead_time_mask) / len(sublead_time_mask):.2f} % TL",
-    density=True,
-    weights=None,
-    linewidth=2,
-)
-plt.hist(
-    np.square(w_lead.m),
-    bins=bin_edges,
-    color="tab:orange",
-    fill=True,
-    histtype="bar",
-    alpha=0.5,
-    label=r"$W_{label}^{0}$",
-    density=True,
-    # weights=mc_weight,
-)
-plt.hist(
-    np.square(w_sublead.m),
-    bins=bin_edges,
-    color="tab:blue",
-    fill=True,
-    histtype="bar",
-    alpha=0.5,
-    label=r"$W_{label}^{1}$",
-    density=True,
-    # weights=mc_weight,
-)
-plt.vlines(0, 0, 2e-3, color="red", linestyle="--")
-plt.xlim(-2e2, 8e3)
-plt.ylim(0, 1.5e-3)
-plt.xlabel(r"Derived Mass$^{2}$ [GeV]$^{2}$", labelpad=20)
-plt.ylabel("Normalized counts")
-plt.legend(
-    loc="best",
-    ncol=1,
-    prop={"size": 20},
-    columnspacing=1.0,
-    frameon=False,
-    framealpha=0.8,
-)
-plt.show()
-plt.close()
 print(
     f"m2 with {100 * np.sum(lead_time_mask * sublead_time_mask) / len(lead_time_mask):.2f} % time-like (TL) evts"
 )
 
 # %%
-# TODO: CGLMP
-
-
-def Bij(particles):
-    # Ensure ROOT is properly initialized
-    ROOT.gROOT.SetBatch(True)
-
-    def cglmp(z_xp, z_xn, z_yp, z_yn):
-        """
-        This is a function to calculate Bij (CGLMP values).
-        :param z_xp: Angle (xi) between positive lepton and x-axis.
-        :param z_xn: Angle (xi) between negative lepton and x-axis.
-        :param z_yp: Angle (xi) between positive lepton and y-axis.
-        :param z_xn: Angle (xi) between negative lepton and y-axis.
-        """
-        # count expectation value, use (27) in Alan's paper
-        tr_a = (np.divide(8, np.sqrt(3))) * (z_xp * z_xn + z_yp * z_yn)
-        tr_b = (
-            25
-            * (np.square(z_xp) - np.square(z_yp))
-            * (np.square(z_xn) - np.square(z_yn))
-        )
-        tr_c = 100 * (z_xp * z_yp * z_xn * z_yn)
-        tr = tr_a + tr_b + tr_c
-
-        return tr
-
-    WpBoson = TLorentzVector(*particles[:4])
-    WpLepton = TLorentzVector(*particles[4:8])
-    WnBoson = TLorentzVector(*particles[8:12])
-    WnLepton = TLorentzVector(*particles[12:16])
-
-    # construct Higgs 4-vector
-    Higgs = WpBoson + WnBoson
-
-    # construct a moving orthogonal basis (k,r,n)
-    Beam_p = TLorentzVector(0, 0, 1, 1)  # spatial-axis
-
-    # define boost vector
-    Higgsb = Higgs.BoostVector()
-
-    # (1) performs a boost transformation from the rod frame to the rawal one.
-    # Perform boost transformation from the rod frame to the rawal one
-    for vec in [WpBoson, WpLepton, WnBoson, WnLepton, Beam_p]:
-        vec.Boost(-Higgsb)
-
-    # 2. Define (k,r,n) -> definitions are in Alan's paper
-    k_per = TVector3(WpBoson.X(), WpBoson.Y(), WpBoson.Z())
-    p_per = TVector3(Beam_p.X(), Beam_p.Y(), Beam_p.Z())  # in the Higgs rest frame
-    k = k_per.Unit()  # normalized -> unit vector
-    p = p_per.Unit()
-    y = p.Dot(k)
-    r_length = np.sqrt(1 - y * y)
-    r = (1 / r_length) * (p - y * k)
-    n = (1 / r_length) * (p.Cross(k))  # (1/sin)*sin = 1 -> unit vector
-
-    # 3. Further boost to W+ and W- frame respectively
-    WpkBoost = WpBoson.BoostVector()
-    WpBoson.Boost(-WpkBoost)
-    WpLepton.Boost(-WpkBoost)
-    WnkBoost = WnBoson.BoostVector()
-    WnBoson.Boost(-WnkBoost)
-    WnLepton.Boost(-WnkBoost)
-
-    # 4. Map all particle to (k,r,n) frame
-    WpLp = WpLepton.Vect()  # momentum in (k,r,n)
-    WnLp = WnLepton.Vect()
-    # Mapping to n-r-k basis
-    WpLp_k = TLorentzVector(WpLp.Dot(n), WpLp.Dot(r), WpLp.Dot(k), WpLepton.E())
-    WnLp_k = TLorentzVector(WnLp.Dot(n), WnLp.Dot(r), WnLp.Dot(k), WnLepton.E())
-
-    # 5. Calculate directional cosines
-    # directional cosine from Wp
-    WpLp_Vect_Mag = WpLp_k.Vect().Mag()
-    cos_n_join_p = np.divide(WpLp_k.X(), WpLp_Vect_Mag)
-    cos_r_join_p = np.divide(WpLp_k.Y(), WpLp_Vect_Mag)
-    cos_k_join_p = np.divide(WpLp_k.Z(), WpLp_Vect_Mag)
-    # directional cosine from Wn
-    WnLp_Vect_Mag = WnLp_k.Vect().Mag()
-    cos_n_join_n = np.divide(WnLp_k.X(), WnLp_Vect_Mag)
-    cos_r_join_n = np.divide(WnLp_k.Y(), WnLp_Vect_Mag)
-    cos_k_join_n = np.divide(WnLp_k.Z(), WnLp_Vect_Mag)
-
-    # 6. Calculate Bij (CGLMP values)
-    B_xy = cglmp(cos_n_join_p, cos_n_join_n, cos_r_join_p, cos_r_join_n)
-    B_yz = cglmp(cos_r_join_p, cos_r_join_n, cos_k_join_p, cos_k_join_n)
-    B_zx = cglmp(cos_n_join_p, cos_n_join_n, cos_k_join_p, cos_k_join_n)
-
-    return (
-        np.array([B_xy, B_yz, B_zx]),
-        np.array([cos_n_join_p, cos_r_join_p, cos_k_join_p]),
-        np.array([cos_n_join_n, cos_r_join_n, cos_k_join_n]),
-    )
-
-
-def result_generator(particles):
-    with multiprocessing.Pool(WORKERS) as pool:
-        # Retrieve the output from the pool
-        results = list(pool.map(Bij, particles))
-
-    # Unpack the results
-    bij, xi_p, xi_n = zip(*results)
-
-    bij = np.vstack(bij)  # Flatten the nested array
-    xi_p = np.vstack(xi_p)
-    xi_n = np.vstack(xi_n)
-    mask = np.any(np.isnan(bij), axis=1)
-    return (
-        bij[~mask, :],
-        xi_p[~mask, :],
-        xi_n[~mask, :],
-    )
-
-# %%
-# reco
-particles = np.concatenate(
-    [
-        sig_pred_inv[:, 0:4],
-        lead_lep_p4[test_indices],
-        sig_pred_inv[:, 4:8],
-        sublead_lep_p4[test_indices],
-    ],
-    axis=1,
-)
-bij = result_generator(particles)[0][0:80_000, :]
-xi_p = result_generator(particles)[1][0:80_000, :]
-xi_n = result_generator(particles)[2][0:80_000, :]
-
-# truth
-particles = np.concatenate(
-    [
-        sig_truth_inv[:, 0:4],
-        truth_lead_lep_p4[test_indices],
-        sig_truth_inv[:, 4:8],
-        truth_sublead_lep_p4[test_indices],
-    ],
-    axis=1,
-)
-truth_bij = result_generator(particles)[0][0:80_000, :]
-truth_xi_p = result_generator(particles)[1][0:80_000, :]
-truth_xi_n = result_generator(particles)[2][0:80_000, :]
-
-# %%
-w_plot_true = [
-    sig_truth_inv[:, 0],
-    sig_truth_inv[:, 2],
-    sig_truth_inv[:, 3],
-    sig_truth_inv[:, 4],
-    sig_truth_inv[:, 6],
-    sig_truth_inv[:, 7],
-]
-w_plot_pred = [
-    sig_pred_inv[:, 0],
-    sig_pred_inv[:, 2],
-    sig_pred_inv[:, 3],
-    sig_pred_inv[:, 4],
-    sig_pred_inv[:, 6],
-    sig_pred_inv[:, 7],
-]
-w_plot_ranges = [
-    [-200, 200],
-    [-700, 700],
-    [0, 800],
-    [-200, 200],
-    [-600, 600],
-    [0, 800],
-]
-w_plot_labels = [
-    r"$W^{0}\ p_{x}$",
-    r"$W^{0}\ p_{z}$",
-    r"$W^{0}\ E$",
-    r"$W^{1}\ p_{x}$",
-    r"$W^{1}\ p_{z}$",
-    r"$W^{1}\ E$",
-]
-plot.hist_1d_grid(
-    w_plot_true,
-    w_plot_pred,
-    title=w_plot_labels,
-    ranges=w_plot_ranges,
-    xlabel="[GeV]",
-)
-plot.hist_2d_grid(
-    w_plot_true,
-    w_plot_pred,
-    title=w_plot_labels,
-    ranges=w_plot_ranges,
-    xlabel="True [GeV]",
-    ylabel="Predicted [GeV]",
-)
-plt.close()
-
-# %%
-xi_plot_true = [
-    truth_xi_p[:, 0],
-    truth_xi_p[:, 1],
-    truth_xi_p[:, 2],
-    truth_xi_n[:, 0],
-    truth_xi_n[:, 1],
-    truth_xi_n[:, 2],
-]
-xi_plot_pred = [
-    xi_p[:, 0],
-    xi_p[:, 1],
-    xi_p[:, 2],
-    xi_n[:, 0],
-    xi_n[:, 1],
-    xi_n[:, 2],
-]
-xi_plot_ranges = [[-1, 1]] * 6
-xi_plot_labels = [
-    r"$\xi^{(0)}_{n}$",
-    r"$\xi^{(0)}_{r}$",
-    r"$\xi^{(0)}_{k}$",
-    r"$\xi^{(1)}_{n}$",
-    r"$\xi^{(1)}_{r}$",
-    r"$\xi^{(1)}_{k}$",
-]
-plot.hist_1d_grid(
-    xi_plot_true,
-    xi_plot_pred,
-    title=xi_plot_labels,
-    ranges=xi_plot_ranges,
-    xlabel="[None]",
-)
-plot.hist_2d_grid(
-    xi_plot_true,
-    xi_plot_pred,
-    title=xi_plot_labels,
-    ranges=xi_plot_ranges,
-    xlabel="True [None]",
-    ylabel="Predicted [None]",
-)
-plt.close()
-
-# %%
 t_end = time.time()
 print(f"Time elapsed: {t_end - t_start:.2f} s")
 print("Done!")
-
-

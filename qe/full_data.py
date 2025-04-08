@@ -42,6 +42,7 @@ class Lead_lep:
     phi = pd.read_hdf(data_path, "RecoLep0")["Phi"]
     p4 = np.array([px, py, pz, energy]).T
     p3 = np.array([px, py, pz]).T
+    q = pd.read_hdf(data_path, "RecoLep0")["F"]
 
 
 @dataclass
@@ -55,6 +56,7 @@ class Sublead_lep:
     phi = pd.read_hdf(data_path, "RecoLep1")["Phi"]
     p4 = np.array([px, py, pz, energy]).T
     p3 = np.array([px, py, pz]).T
+    q = pd.read_hdf(data_path, "RecoLep1")["F"]
 
 
 @dataclass
