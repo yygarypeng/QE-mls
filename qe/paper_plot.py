@@ -57,7 +57,7 @@ class Plotter:
         ax1.yaxis.offsetText.set_fontsize(tick_size)
 
         ax1.set_xlim(ranges)
-        ax1.legend(fontsize=tick_size)
+        ax1.legend(fontsize=title_size)
         ax1.set_ylabel(ylabel, fontsize=label_size, labelpad=5)
         ax1.set_title(title, fontsize=title_size, loc="right")
 
@@ -178,7 +178,7 @@ class Plotter:
         rmse_title=False,
         weights=None,
         save_name=None,
-        dpi=300,
+        dpi=500,
     ):
         """
         Plot a 2*3 grid of 1D histograms comparing true and predicted values.
@@ -195,11 +195,11 @@ class Plotter:
         if not isinstance(sub_ylabel, list):
             sub_ylabel = [sub_ylabel] * 6
 
-        label_size = 18
-        tick_size = 14
-        title_size = 18
+        label_size = 20
+        tick_size = 16
+        title_size = 20
 
-        fig = plt.figure(figsize=(20, 14))
+        fig = plt.figure(figsize=(20, 14), dpi=dpi)
         outer = gridspec.GridSpec(2, 3, wspace=0.1, hspace=0.08)
 
         for i in range(6):
@@ -233,7 +233,7 @@ class Plotter:
                 ax1.set_title(f"{title[i]} (RMSE={rmse:.2f} ± {sem:.2f})", fontsize=title_size, loc="right")
             else:
                 ax1.set_title(title[i], fontsize=title_size, loc="right")
-            ax1.legend(fontsize=tick_size)
+            ax1.legend(fontsize=title_size)
 
             ratio = np.divide(pr_bar + 1, tr_bar + 1, where=(tr_bar != 0))
             ax2.vlines(tr_bin[1:], 1, ratio, color="k", lw=1)
@@ -297,7 +297,7 @@ class Plotter:
         xpad=15,
         weights=None,
         save_name=None,
-        dpi=300,
+        dpi=500,
     ):
         """
         Plot a 2*3 grid of 2D histograms comparing true and predicted values with a shared color bar.
@@ -311,11 +311,11 @@ class Plotter:
         if not isinstance(title, list):
             title = [title] * 6
 
-        label_size = 18
-        tick_size = 14
-        title_size = 18
+        label_size = 20
+        tick_size = 16
+        title_size = 20
 
-        fig = plt.figure(figsize=(20, 14))
+        fig = plt.figure(figsize=(20, 14), dpi=dpi)
         gs = gridspec.GridSpec(2, 4, width_ratios=[1, 1, 1, 0.05], wspace=0.18, hspace=-0.1)
 
         axes = []
@@ -407,6 +407,270 @@ class Plotter:
         plt.show()
         plt.close()
 
+
+    ########################
+    # 1D Grid (4×2)
+    ########################
+    def hist_1d_grid_4plots(
+        self,
+        true_list,
+        pred_list,
+        ranges=(0.0, 1.0),
+        xlabel="[unit]",
+        title="",
+        ylabel="Counts",
+        legend_lst=["Pred", "True"],
+        bins=50,
+        xpad=8,
+        rmse_title=False,
+        weights=None,
+        save_name=None,
+        dpi=500,
+    ):
+        """
+        Plot a 4*2 grid of 1D histograms comparing true and predicted values.
+        """
+        # Ensure we have sufficient data
+        n_plots = min(len(true_list), len(pred_list), 8)
+        
+        if not isinstance(ranges, list):
+            ranges = [ranges] * n_plots
+        if not isinstance(xlabel, list):
+            xlabel = [xlabel] * n_plots
+        if not isinstance(title, list):
+            title = [title] * n_plots
+        if not isinstance(ylabel, list):
+            ylabel = [ylabel] * n_plots
+        sub_ylabel = f"{legend_lst[0]}/{legend_lst[1]}"
+        if not isinstance(sub_ylabel, list):
+            sub_ylabel = [sub_ylabel] * n_plots
+
+        label_size = 20
+        tick_size = 16
+        title_size = 20
+
+        # Change figure size to be taller than wide for 4×2 layout
+        fig = plt.figure(figsize=(20, 30), dpi=dpi)
+        outer = gridspec.GridSpec(4, 2, wspace=0.15, hspace=0.1)
+
+        for i in range(n_plots):
+            row = i // 2
+            col = i % 2
+            
+            inner = gridspec.GridSpecFromSubplotSpec(
+                2, 1, subplot_spec=outer[i], height_ratios=[6, 2], hspace=0.08
+            )
+            ax1 = fig.add_subplot(inner[0])
+            ax2 = fig.add_subplot(inner[1], sharex=ax1)
+            ax1.tick_params(labelbottom=False)
+
+            # Force y-axis to use scientific notation
+            formatter = plt.ScalarFormatter(useMathText=True)
+            formatter.set_scientific(True)
+            formatter.set_powerlimits((-1, 1))  # Force scientific notation for all values
+            ax1.yaxis.set_major_formatter(formatter)
+
+            tr_bar, tr_bin = np.histogram(true_list[i], bins=bins, range=ranges[i], weights=weights)
+            pr_bar, _ = np.histogram(pred_list[i], bins=bins, range=ranges[i], weights=weights)
+
+            hep.histplot(tr_bar, tr_bin, ax=ax1, lw=2, color="b", label=legend_lst[1])
+            hep.histplot(pr_bar, tr_bin, ax=ax1, lw=2, color="r", label=legend_lst[0])
+            ax1.set_xlim(ranges[i])
+            
+            if rmse_title:
+                diff = np.array(pred_list[i]) - np.array(true_list[i])
+                rmse = np.sqrt(np.mean(diff**2))
+                sem = stats.sem(diff)
+                ax1.set_title(f"{title[i]} (RMSE={rmse:.2f} ± {sem:.2f})", fontsize=title_size, loc="right")
+            else:
+                ax1.set_title(title[i], fontsize=title_size, loc="right")
+                
+            # Better legend positioning
+            ax1.legend(fontsize=tick_size, loc='upper right')
+
+            # Improved ratio calculation to avoid division issues
+            epsilon = 1e-10
+            tr_bar_safe = np.where(tr_bar == 0, epsilon, tr_bar)
+            ratio = np.divide(pr_bar, tr_bar_safe)
+            
+            ax2.vlines(tr_bin[1:], 1, ratio, color="k", lw=1)
+            for j, val in enumerate(ratio):
+                if val > 2:
+                    ax2.annotate(
+                        "", xy=(tr_bin[j + 1], 2), xytext=(tr_bin[j + 1], 1.95),
+                        arrowprops=dict(facecolor="k", shrink=0.05, width=1, headwidth=2),
+                    )
+                elif val < 0:
+                    ax2.annotate(
+                        "", xy=(tr_bin[j + 1], 0), xytext=(tr_bin[j + 1], 0.05),
+                        arrowprops=dict(facecolor="k", shrink=0.05, width=1, headwidth=2),
+                    )
+                else:
+                    ax2.scatter(tr_bin[j + 1], val, color="k", lw=1, s=10)
+
+            ax2.set_ylim([0, 2])
+            ax2.axhline(1, c="grey", ls="dashed", alpha=0.8)
+
+            if col == 0:
+                ax1.set_ylabel(ylabel[i], fontsize=label_size)
+                ax2.set_ylabel(sub_ylabel[i], fontsize=label_size, loc="center", labelpad=10)
+            else:
+                ax1.set_ylabel("")
+                ax2.set_ylabel("")
+                ax1.tick_params(labelleft=True)
+                ax2.tick_params(labelleft=False)
+
+            # Only set x-labels on the bottom row (row == 3)
+            if row == 3:
+                ax2.set_xlabel(xlabel[i], fontsize=label_size, labelpad=xpad)
+            else:
+                ax2.set_xlabel("")
+                ax2.tick_params(labelbottom=False)
+
+            ax1.tick_params(axis="both", labelsize=tick_size)
+            ax2.tick_params(axis="both", labelsize=tick_size, pad=10)
+
+        # Handle empty subplot slots if n_plots < 8
+        for i in range(n_plots, 8):
+            row = i // 2
+            col = i % 2
+            ax = fig.add_subplot(outer[i])
+            ax.axis('off')
+
+        plt.subplots_adjust(left=0.12, right=0.92, top=0.95, bottom=0.08, wspace=0.25, hspace=0.1)
+
+        if save_name:
+            plt.savefig(f"{save_name}.png", dpi=dpi, bbox_inches="tight")
+            print(f"Saved 1D grid as {save_name}.png")
+
+        plt.show()
+        plt.close()
+    
+    ########################
+    # 2D Grid (4×2)
+    ########################
+    def hist_2d_grid_4plot(
+        self,
+        true_list,
+        pred_list,
+        ranges=(0.0, 1.0),
+        xlabel="X",
+        ylabel="Y",
+        title="",
+        bins=50,
+        log=True,
+        xpad=15,
+        weights=None,
+        save_name=None,
+        dpi=500,
+    ):
+        """
+        Plot a 4*2 grid of 2D histograms comparing true and predicted values with a shared color bar.
+        """
+        if not isinstance(ranges, list):
+            ranges = [ranges] * 8
+        if not isinstance(xlabel, list):
+            xlabel = [xlabel] * 8
+        if not isinstance(ylabel, list):
+            ylabel = [ylabel] * 8
+        if not isinstance(title, list):
+            title = [title] * 8
+
+        label_size = 20
+        tick_size = 16
+        title_size = 20
+
+        fig = plt.figure(figsize=(14, 25), dpi=dpi)
+        gs = gridspec.GridSpec(5, 2, height_ratios=[1, 1, 1, 1, 0.05], wspace=0.2, hspace=0.2)
+
+        axes = []
+        for i in range(8):
+            row = i // 2
+            col = i % 2
+            ax = fig.add_subplot(gs[row, col])
+            axes.append(ax)
+
+        # Ensure ranges are valid
+        for i in range(8):
+            if not isinstance(ranges[i], (list, tuple)) or len(ranges[i]) != 2:
+                ranges[i] = [min(true_list[i]), max(true_list[i])]
+
+        # Find global max/min counts for consistent color scaling
+        max_count = 0
+        min_count = float('inf')
+        for i in range(min(len(true_list), len(pred_list), 8)):
+            hist_vals, _, _ = np.histogram2d(
+                pred_list[i], true_list[i], bins=bins, range=[ranges[i], ranges[i]], weights=weights
+            )
+            max_count = max(max_count, np.max(hist_vals))
+            non_zero_min = np.min(hist_vals[hist_vals > 0]) if np.any(hist_vals > 0) else 1
+            min_count = min(min_count, non_zero_min)
+        
+        if min_count == float('inf'):
+            min_count = 1  # Fallback for empty or all-zero data
+
+        # Shared normalization
+        if log:
+            norm = LogNorm(vmin=min_count, vmax=max_count)
+        else:
+            norm = Normalize(vmin=min_count, vmax=max_count)
+
+        # Create the plots with shared normalization
+        for i, ax in enumerate(axes):
+            row = i // 2
+            col = i % 2
+            
+            formatter = plt.ScalarFormatter(useMathText=True)
+            formatter.set_scientific(True)
+            formatter.set_powerlimits((-1, 1))  # Force scientific notation for all values
+            ax.xaxis.set_major_formatter(formatter)
+            ax.yaxis.set_major_formatter(formatter)
+            
+            h = ax.hist2d(
+                pred_list[i], true_list[i], bins=bins, range=[ranges[i], ranges[i]],
+                cmap="viridis", cmin=1, norm=norm, weights=weights,
+            )
+
+            ax.plot(ranges[i], ranges[i], "k--", alpha=0.7)
+            r2_val = r2_score(true_list[i], pred_list[i])
+            ax.set_title(rf"{title[i]} ($R^2$={r2_val:.2f})", fontsize=title_size, loc="right")
+
+            if col == 0:
+                ax.set_ylabel(ylabel[i], fontsize=label_size)
+            else:
+                ax.set_ylabel("")
+                ax.tick_params(labelleft=True)
+
+            if row == 3:  # Bottom row
+                ax.set_xlabel(xlabel[i], fontsize=label_size, labelpad=xpad)
+            else:
+                ax.set_xlabel("")
+                ax.tick_params(labelbottom=True)  # Show ticks on all rows
+
+            ax.set_aspect("equal", adjustable="box")
+            ax.set_xlim(ranges[i])
+            ax.set_ylim(ranges[i])
+            ax.tick_params(axis="both", labelsize=tick_size, pad=8)
+            ax.xaxis.set_major_formatter(plt.ScalarFormatter(useMathText=True))
+            ax.yaxis.set_major_formatter(plt.ScalarFormatter(useMathText=True))
+
+        # Shared color bar at the bottom
+        sm = plt.cm.ScalarMappable(cmap="viridis", norm=norm)
+        sm.set_array([])
+        cax = fig.add_subplot(gs[4, :])  
+        cbar = fig.colorbar(sm, cax=cax, orientation="horizontal")
+        cbar.set_label("Counts" if log else "Counts", fontsize=label_size, labelpad=10)
+        cbar.ax.tick_params(labelsize=tick_size)
+        
+        plt.subplots_adjust(left=0.12, right=0.92, top=0.95, bottom=0.06, wspace=0.12, hspace=0.1)
+
+        if save_name:
+            plt.savefig(f"{save_name}.png", dpi=dpi, bbox_inches="tight")
+            print(f"Saved 2D grid as {save_name}.png")
+
+        plt.show()
+        plt.close()
+
     ########################
     # Combined Grid (2×3)
     ########################
@@ -429,7 +693,7 @@ class Plotter:
         rmse_title=False,
         weights=None,
         save_name=None,
-        dpi=300,
+        dpi=500,
     ):
         """
         Plot a 2x3 grid where first row has 1D histograms and second row has 2D histograms.
@@ -441,11 +705,11 @@ class Plotter:
         if not isinstance(title, list):
             title = [title] * 3
 
-        label_size = 18
-        tick_size = 14
-        title_size = 18
+        label_size = 20
+        tick_size = 16
+        title_size = 20
 
-        fig = plt.figure(figsize=(18, 14))
+        fig = plt.figure(figsize=(18, 14), dpi=dpi)
         gs = gridspec.GridSpec(2, 4, width_ratios=[1, 1, 1, 0.05], wspace=0.18, hspace=0.1)
 
         # First row: 1D histograms with ratio plots
@@ -510,7 +774,7 @@ class Plotter:
                 ax1.set_title(f"{title[i]} (RMSE={rmse:.2f} ± {sem:.2f})", fontsize=title_size, loc="right")
             else:
                 ax1.set_title(title[i], fontsize=title_size, loc="right")
-            ax1.legend(fontsize=tick_size)
+            ax1.legend(fontsize=title_size)
 
             if i == 0:
                 ax1.set_ylabel(row1_ylabel, fontsize=label_size)
@@ -627,7 +891,7 @@ class Plotter:
         rmse_title=False,
         weights=None,
         save_name=None,
-        dpi=300,
+        dpi=500,
     ):
         """
         Plot a 1×3 grid with 1D histograms and ratio plots.
@@ -639,12 +903,12 @@ class Plotter:
         if not isinstance(title, list):
             title = [title] * 3
 
-        label_size = 18
-        tick_size = 14
-        title_size = 18
+        label_size = 20
+        tick_size = 16
+        title_size = 20
 
         # Change figure size to be wider than tall since we only have one row
-        fig = plt.figure(figsize=(15, 8))
+        fig = plt.figure(figsize=(15, 8), dpi=dpi)
         
         # Create a single row grid with 3 columns
         gs = gridspec.GridSpec(1, 3, wspace=0.2)
@@ -684,7 +948,7 @@ class Plotter:
                 ax1.set_title(f"{title[i]} (RMSE={rmse:.2f} ± {sem:.2f})", fontsize=title_size, loc="right")
             else:
                 ax1.set_title(title[i], fontsize=title_size, loc="right")
-            ax1.legend(fontsize=tick_size)
+            ax1.legend(fontsize=title_size)
 
             if i == 0:
                 ax1.set_ylabel(row1_ylabel, fontsize=label_size)
@@ -739,9 +1003,12 @@ if __name__ == "__main__":
     plot.hist_1d(pred, truth, ranges=(0, 1), xpad=25, save_name="1d_test")
     plot.hist_2d(pred, truth, ranges=(-2, 2), xpad=25, save_name="2d_test")
 
-    # Test grid plots
-    true_list_1d = [np.random.uniform(-1, 1, 10000) for _ in range(6)]
-    pred_list_1d = [np.random.normal(0, 0.1, 10000) for _ in range(6)]
+    # # Test grid 3 plots
+    # true_list_1d = [np.random.uniform(-1, 1, 10000) for _ in range(6)]
+    # pred_list_1d = [np.random.normal(0, 0.1, 10000) for _ in range(6)]
+    # Test grid 4 plots
+    true_list_1d = [np.random.uniform(-1, 1, 10000) for _ in range(8)]
+    pred_list_1d = [np.random.normal(0, 0.1, 10000) for _ in range(8)]
     ranges_1d = (-1, 1)
     xlabels_1d = r"$\xi$ [None]"
     titles_1d = [
@@ -753,8 +1020,8 @@ if __name__ == "__main__":
         title=titles_1d, bins=30, save_name="1d_grid_test",
     )
 
-    true_list_2d = [np.random.uniform(-1, 1, 10000) for _ in range(6)]
-    pred_list_2d = [np.random.normal(0, 0.1, 10000) for _ in range(6)]
+    true_list_2d = [np.random.uniform(-1, 1, 10000) for _ in range(8)]
+    pred_list_2d = [np.random.normal(0, 0.1, 10000) for _ in range(8)]
     ranges_2d = (-1, 1)
     xlabels_2d = r"True $\xi$ [None]"
     ylabels_2d = r"Predicted $\xi$ [None]"
@@ -778,6 +1045,17 @@ if __name__ == "__main__":
         true_list_1d, pred_list_1d, ranges=(-1, 1), xlabel="X", title="",
         row1_ylabel="Counts", row1_legend=["Separable", "SM"], bins=50, xpad=10,
         save_name="1d3plot_test", dpi=300,
+    )
+    
+    plot.hist_1d_grid_4plots(
+        true_list_1d, pred_list_1d, ranges=(-1, 1), xlabel="X", title="",
+        ylabel="Counts", legend_lst=["Pred", "True"], bins=50, xpad=10,
+        rmse_title=False, weights=None, save_name="1d_grid_4plots_test", dpi=300,
+    )
+    plot.hist_2d_grid_4plot(
+        true_list_2d, pred_list_2d, ranges=(-1, 1), xlabel="X", ylabel="Y",
+        title="", bins=50, log=True, xpad=10, weights=None,
+        save_name="2d_grid_4plot_test", dpi=300,
     )
 
     print("Done!")

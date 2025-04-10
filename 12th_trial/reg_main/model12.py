@@ -70,9 +70,9 @@ SEED = 114  # set random seed (global variable)
 GEV = 1e-3
 
 # training variables
-SIGMA_LST=[5.0, 10.0, 100.0, 500.0]
+SIGMA_LST=[5.0, 50.0, 200.0, 800.0]
 BATCH_SIZE = 512
-EPOCHS = 1
+EPOCHS = 2048
 LEARNING_RATE = 1e-5
 
 # %%
@@ -435,7 +435,6 @@ def w_mass_mmd_loss_fn(y_true, y_pred):
 
 
 def nu_mass_loss_fn(x_batch, y_pred):
-    _epsilon = 1e-10
     x_batch = tf.cast(x_batch, tf.float32)
     y_pred = tf.cast(y_pred, tf.float32)
 
@@ -448,7 +447,7 @@ def nu_mass_loss_fn(x_batch, y_pred):
                 tf.square(n0_4vect[..., 3])
                 - tf.reduce_sum(tf.square(n0_4vect[..., :3]), axis=-1)
             ),
-            _epsilon,
+            1e-10,
         )
     )
     nu1_mass = tf.sqrt(
@@ -457,7 +456,7 @@ def nu_mass_loss_fn(x_batch, y_pred):
                 tf.square(n1_4vect[..., 3])
                 - tf.reduce_sum(tf.square(n1_4vect[..., :3]), axis=-1)
             ),
-            _epsilon,
+            1e-10,
         )
     )
 
@@ -465,7 +464,6 @@ def nu_mass_loss_fn(x_batch, y_pred):
 
 
 def dinu_pt_loss_fn(x_batch, y_pred):
-    _epsilon = 1e-10
     x_batch = tf.cast(x_batch, tf.float32)
     y_pred = tf.cast(y_pred, tf.float32)
 
@@ -476,14 +474,13 @@ def dinu_pt_loss_fn(x_batch, y_pred):
     nn_px = nn_4vect[..., 0]
     nn_py = nn_4vect[..., 1]
 
-    nn_px_diff = tf.math.maximum(tf.abs(nn_px - x_batch[..., 8]), _epsilon)
-    nn_py_diff = tf.math.maximum(tf.abs(nn_py - x_batch[..., 9]), _epsilon)
+    nn_px_diff = tf.math.maximum(tf.abs(nn_px - x_batch[..., 8]), 1e-10)
+    nn_py_diff = tf.math.maximum(tf.abs(nn_py - x_batch[..., 9]), 1e-10)
 
     return tf.reduce_mean(nn_px_diff + nn_py_diff)
 
 
 def higgs_mass_loss_fn(y_pred):
-    _epsilon = 1e-10
     y_pred = tf.cast(y_pred, tf.float32)
 
     w0_4Vect = y_pred[..., :4]
@@ -496,11 +493,11 @@ def higgs_mass_loss_fn(y_pred):
                 tf.square(higgs_4Vect[..., 3])
                 - tf.reduce_sum(tf.square(higgs_4Vect[..., :3]), axis=-1)
             ),
-            _epsilon,
+            1e-10,
         )
     )
 
-    return tf.reduce_mean(tf.abs(higgs_mass - 125.0)) + _epsilon
+    return tf.reduce_mean(tf.abs(higgs_mass - 125.0)) + 1e-10
 
 
 def mae_loss_fn(y_true, y_pred):
@@ -715,15 +712,13 @@ def build_model(input_shape):
     # Subnet 1 --> Predict neutrino 3-momenta and apply physics layer
     for _ in range(2):
         x = residual_block(x, 256, dropout_rate=0.4, l2=1e-4)
-        x = residual_block(x, 128, dropout_rate=0.4, l2=1e-4)
+        x = residual_block(x, 64, dropout_rate=0.4, l2=1e-4)
     for _ in range(2):
-        # x = residual_block(x, 128, dropout_rate=0.4, l2=1e-4)
         x = residual_block(x, 256, dropout_rate=0.4, l2=1e-4)
     for _ in range(2):
         x = residual_block(x, 128, dropout_rate=0.4, l2=1e-4)
-        # x = residual_block(x, 64, dropout_rate=0.4, l2=1e-4)
     for _ in range(2):
-        x = residual_block(x, 64, dropout_rate=0.4, l2=1e-4)
+        x = residual_block(x, 32, dropout_rate=0.4, l2=1e-4)
         x = residual_block(x, 128, dropout_rate=0.4, l2=1e-4)
     
     # Bottleneck
@@ -762,14 +757,14 @@ model.compile(
     optimizer=tf.keras.optimizers.Adam(learning_rate=LEARNING_RATE),
     loss_weights={
         "mae": 1.0,
-        "nu_mass": 0,
-        "higgs_mass": 0,
+        "nu_mass": 0.0,
+        "higgs_mass": 0.0,
         "w0_mass_mae": 0.0,
         "w1_mass_mae": 0.0,
-        "w_mass_mmd0": 7.5,
-        "w_mass_mmd1": 7.5,
-        "dinu_pt": 0,
-        "neg_r2": 0,
+        "w_mass_mmd0": 10.0,
+        "w_mass_mmd1": 10.0,
+        "dinu_pt": 0.0,
+        "neg_r2": 0.0,
     },
     jit_compile=False,
     steps_per_execution=256,
