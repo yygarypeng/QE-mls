@@ -111,10 +111,10 @@ def plot_training_history(history, dir_name, name):
     metrics = [
         ("loss", "val_loss", "Combined Loss"),
         ("mae_loss", "val_mae_loss", "MAE Loss"),
-        ("w_mass_mmd0_loss", "val_w_mass_mmd0_loss", r"$W^{\ell_0}$ MMD Loss"),
-        ("w_mass_mmd1_loss", "val_w_mass_mmd1_loss", r"$W^{\ell_1}$ MMD Loss"),
-        ("w0_mass_mae_loss", "val_w0_mass_mae_loss", r"Derived $m_{W^{\ell_0}}$ MAE Loss"),
-        ( "w1_mass_mae_loss", "val_w1_mass_mae_loss", r"Derived $m_{W^{\ell_1}}$ MAE Loss"),
+        ("w_mass_mmd0_loss", "val_w_mass_mmd0_loss", r"$W_{0}$ MMD Loss"),
+        ("w_mass_mmd1_loss", "val_w_mass_mmd1_loss", r"$W_{1}$ MMD Loss"),
+        ("w0_mass_mae_loss", "val_w0_mass_mae_loss", r"Derived $m_{W_{0}}$ MAE Loss"),
+        ( "w1_mass_mae_loss", "val_w1_mass_mae_loss", r"Derived $m_{W_{1}}$ MAE Loss"),
         ("nu_mass_loss", "val_nu_mass_loss", r"$m_{\nu}$ Loss"),
         ("neg_r2_loss", "val_neg_r2_loss", r"-$R^2$ Loss"),
         ("higgs_mass_loss", "val_higgs_mass_loss", r"$m_{H}$ Loss"),
@@ -185,6 +185,7 @@ def main():
     # Build and train model
     base_model = nn.build_model(input_shape=train_x.shape[-1])
     model = nn.CustomModel(base_model)
+    model.summary()
     model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=nn.LEARNING_RATE),
         loss_weights=nn.LOSS_WEIGHTS,

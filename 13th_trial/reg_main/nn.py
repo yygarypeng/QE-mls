@@ -20,12 +20,12 @@ WORKERS = 16
 SEED = 114
 GEV = 1e-3
 BATCH_SIZE = 512
-EPOCHS = 2048
-LEARNING_RATE = 1e-5
-LOSS_WEIGHTS = {"mae": 1.0, "w_mass_mmd0": 10.0, "w_mass_mmd1": 10.0}
+EPOCHS = 1024
+LEARNING_RATE = 1e-4
+LOSS_WEIGHTS = {"mae": 1.0, "w_mass_mmd0": 10, "w_mass_mmd1": 10}
 
 # internal constants
-SIGMA_LST = [5.0, 50.0, 200.0, 800.0]
+SIGMA_LST = [0.01, 0.1, 10.0, 100.0, 1000.0]
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "1"  # suppress tensorflow information messages
 
@@ -387,17 +387,17 @@ def build_model(input_shape):
     lep0, lep1 = inputs[..., :4], inputs[..., 4:8]
 
     for _ in range(2):
-        x = residual_block(x, 256, dropout_rate=0.4, l2=1e-4)
-        x = residual_block(x, 64, dropout_rate=0.4, l2=1e-4)
+        x = residual_block(x, 256, dropout_rate=0.4, l2=1e-3)
+        x = residual_block(x, 64, dropout_rate=0.4, l2=1e-3)
+    for _ in range(1):
+        x = residual_block(x, 128, dropout_rate=0.4, l2=1e-3)
+    for _ in range(1):
+        x = residual_block(x, 64, dropout_rate=0.4, l2=1e-3)
     for _ in range(2):
-        x = residual_block(x, 256, dropout_rate=0.4, l2=1e-4)
-    for _ in range(2):
-        x = residual_block(x, 128, dropout_rate=0.4, l2=1e-4)
-    for _ in range(2):
-        x = residual_block(x, 64, dropout_rate=0.4, l2=1e-4)
-        x = residual_block(x, 128, dropout_rate=0.4, l2=1e-4)
+        x = residual_block(x, 32, dropout_rate=0.4, l2=1e-3)
+        x = residual_block(x, 128, dropout_rate=0.4, l2=1e-3)
 
-    x = tf.keras.layers.Dense(32, kernel_initializer="he_normal")(x)
+    x = tf.keras.layers.Dense(16, kernel_initializer="he_normal")(x)
     x = tf.keras.layers.BatchNormalization()(x)
     x = tf.keras.layers.Activation("swish")(x)
 
@@ -421,7 +421,7 @@ class LambdaTracker(tf.keras.callbacks.Callback):
         epoch_num = int(self.model.current_epoch.numpy())
         log_str = f"Epoch {epoch_num}"
         for name, value in logs.items():
-            log_str += f"; {name}: {value:.2f}"
+            log_str += f"; {name}: {value:.3E}"
         print(log_str)
 
 
