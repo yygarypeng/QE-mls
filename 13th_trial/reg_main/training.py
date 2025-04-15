@@ -189,8 +189,6 @@ def main():
     model.compile(
         optimizer=tf.keras.optimizers.Adam(learning_rate=nn.LEARNING_RATE),
         loss_weights=nn.LOSS_WEIGHTS,
-        steps_per_execution=256,
-        jit_compile=False,
     )
 
     callbacks = [
@@ -223,9 +221,8 @@ def main():
     model.save(f"{dir_name}{name}.keras", overwrite=True)
     tf.saved_model.save(model, savedmodel_path)
 
-    # Predict and save results
+    # Predict results
     pred_y = model.predict(test_x)
-    np.savez_compressed(f"{dir_name}{name}_data.npz", pred_y=pred_y, test_y=test_y)
 
     # Plot training history
     plot_training_history(history, dir_name, name)
@@ -235,15 +232,6 @@ def main():
     nu1_4vect = pred_y[:, 4:8] - test_x[:, 4:8]
     nu0_mass_sq = nu0_4vect[:, 3] ** 2 - np.sum(nu0_4vect[:, :3] ** 2, axis=1)
     nu1_mass_sq = nu1_4vect[:, 3] ** 2 - np.sum(nu1_4vect[:, :3] ** 2, axis=1)
-
-    plt.hist(nu0_mass_sq, bins=100, histtype="step", label="nu0_mass_squared")
-    plt.hist(nu1_mass_sq, bins=100, histtype="step", label="nu1_mass_squared")
-    plt.semilogx()
-    plt.semilogy()
-    plt.legend()
-    plt.savefig(f"{dir_name}{name}_nu_mass.png")
-    plt.close()
-
     print(f"nu0_mass_squared avg: {np.mean(nu0_mass_sq):.2f}")
     print(f"nu1_mass_squared avg: {np.mean(nu1_mass_sq):.2f}")
 
