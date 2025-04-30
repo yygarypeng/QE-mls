@@ -8,7 +8,9 @@ regression using custom loss functions and physics-constrained layers.
 import os
 import sys
 
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # suppress tensorflow information messages
 import tensorflow as tf
+
 from keras.saving import register_keras_serializable
 
 # Configuration
@@ -19,15 +21,13 @@ sys.path.append(HOME_PATH + "/qe")
 WORKERS = 16
 SEED = 114
 GEV = 1e-3
+
+# internal constants
 BATCH_SIZE = 512
 EPOCHS = 1024
 LEARNING_RATE = 1e-4
-LOSS_WEIGHTS = {"mae": 1.0, "higgs_mass":1.0 , "w_mass_mmd0": 10, "w_mass_mmd1": 10}
-
-# internal constants
-SIGMA_LST = [5.0, 10.0, 50.0, 100.0, 500.0]
-
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "1"  # suppress tensorflow information messages
+LOSS_WEIGHTS = {"mae": 1.0, "w_mass_mmd0": 8.0, "w_mass_mmd1": 8.0}
+SIGMA_LST = [0.05, 0.1, 0.5, 1.0, 5.0, 10.0]
 
 
 def compute_mmd(x, y, sigma_list=SIGMA_LST):
@@ -262,7 +262,7 @@ class CustomModel(tf.keras.Model):
             # Ensure optimizer is aware of all trainable variables
             self.optimizer.build(self.trainable_variables)
 
-    def compile(self, optimizer, loss_weights=None, steps_per_execution=1, **kwargs):
+    def compile(self, optimizer, loss_weights=None, **kwargs):
         super().compile(optimizer=optimizer, **kwargs)
         default_weights = {
             "mae": 1.0,
@@ -276,7 +276,6 @@ class CustomModel(tf.keras.Model):
             "neg_r2": 0.0,
         }
         self.loss_weights = {**default_weights, **(loss_weights or {})}
-        self.steps_per_execution = steps_per_execution
         # Ensure optimizer is built with all trainable variables
         self.optimizer.build(self.trainable_variables)
 
@@ -382,23 +381,17 @@ def build_model(input_shape):
     x = inputs
     lep0, lep1 = inputs[..., :4], inputs[..., 4:8]
 
+    for _ in range(3):
+        x = residual_block(x, 256, dropout_rate=0.2, l2=1e-4)
+        x = residual_block(x, 128, dropout_rate=0.2, l2=1e-4)
     for _ in range(2):
-        x = residual_block(x, 256, dropout_rate=0.3, l2=1e-4)
-        x = residual_block(x, 64, dropout_rate=0.3, l2=1e-4)
-    for _ in range(2):
-        x = residual_block(x, 32, dropout_rate=0.3, l2=1e-4)
-        x = residual_block(x, 128, dropout_rate=0.3, l2=1e-4)
-    for _ in range(2):
-        x = residual_block(x, 128, dropout_rate=0.3, l2=1e-4)
-        x = residual_block(x, 32, dropout_rate=0.3, l2=1e-4)
-    for _ in range(2):
-        x = residual_block(x, 64, dropout_rate=0.3, l2=1e-4)
-        x = residual_block(x, 128, dropout_rate=0.3, l2=1e-4)
-
-    x = tf.keras.layers.Dense(16, kernel_initializer="he_normal")(x)
-    x = tf.keras.layers.BatchNormalization()(x)
-    x = tf.keras.layers.Activation("swish")(x)
-
+        x = residual_block(x, 128, dropout_rate=0.2, l2=1e-4)
+        x = residual_block(x, 256, dropout_rate=0.2, l2=1e-4)
+    
+    # bottleneck
+    x = dense_dropout_block(x, 128, dropout_rate=0.0, l2=0.0)
+    x = dense_dropout_block(x, 32 , dropout_rate=0.0, l2=0.0)
+    
     nu_3mom = tf.keras.layers.Dense(
         6, activation="linear", kernel_initializer="he_normal"
     )(x)

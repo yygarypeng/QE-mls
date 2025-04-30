@@ -7,7 +7,10 @@ import glob
 import shutil
 import numpy as np
 from matplotlib import pyplot as plt
+
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"  # suppress tensorflow information messages
 import tensorflow as tf
+
 from sklearn.model_selection import train_test_split
 
 # Custom imports
@@ -23,13 +26,13 @@ import full_data as data
 import nn
 
 
-def setup_gpu():
+def setup_gpu(growth=False):
     """Configure GPU settings for TensorFlow"""
     gpus = tf.config.experimental.list_physical_devices("GPU")
     if gpus:
         try:
             tf.config.set_visible_devices(gpus[0], "GPU")
-            tf.config.experimental.set_memory_growth(gpus[0], True)
+            tf.config.experimental.set_memory_growth(gpus[0], growth)
             print(
                 f"{len(gpus)} Physical GPUs, {len(tf.config.list_logical_devices('GPU'))} Logical GPU"
             )
@@ -143,7 +146,7 @@ def plot_training_history(history, dir_name, name):
 
 def main():
     t_start = time.time()
-
+    
     # Setup environment
     setup_gpu()
 
@@ -168,7 +171,7 @@ def main():
     )
 
     train_x, valid_x, test_x = obs_kin[train_idx], obs_kin[valid_idx], obs_kin[test_idx]
-    train_y, valid_y, test_y = int_kin[train_idx], int_kin[valid_idx], int_kin[test_idx]
+    train_y, valid_y, _ = int_kin[train_idx], int_kin[valid_idx], int_kin[test_idx]
 
     print(
         f"Training: {train_x.shape}, Validation: {valid_x.shape}, Testing: {test_x.shape}"

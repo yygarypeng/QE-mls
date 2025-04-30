@@ -230,7 +230,7 @@ class Plotter:
                 diff = np.array(pred_list[i]) - np.array(true_list[i])
                 rmse = np.sqrt(np.mean(diff**2))
                 sem = stats.sem(diff)
-                ax1.set_title(f"{title[i]} (RMSE={rmse:.2f} ± {sem:.2f})", fontsize=title_size, loc="right")
+                ax1.set_title(f"{title[i]} (RMSE={rmse:.2f} ± {1.96*sem:.2f})", fontsize=title_size, loc="right")
             else:
                 ax1.set_title(title[i], fontsize=title_size, loc="right")
             ax1.legend(fontsize=title_size)
@@ -238,12 +238,12 @@ class Plotter:
             ratio = np.divide(pr_bar + 1, tr_bar + 1, where=(tr_bar != 0))
             ax2.vlines(tr_bin[1:], 1, ratio, color="k", lw=1)
             for j, val in enumerate(ratio):
-                if val > 2:
+                if val >= 2:
                     ax2.annotate(
                         "", xy=(tr_bin[j + 1], 2), xytext=(tr_bin[j + 1], 1.95),
                         arrowprops=dict(facecolor="k", shrink=0.05, width=1, headwidth=2),
                     )
-                elif val < 0:
+                elif val <= 0:
                     ax2.annotate(
                         "", xy=(tr_bin[j + 1], 0), xytext=(tr_bin[j + 1], 0.05),
                         arrowprops=dict(facecolor="k", shrink=0.05, width=1, headwidth=2),
@@ -366,7 +366,7 @@ class Plotter:
                 cmap="viridis", cmin=1, norm=norm, weights=weights,
             )
 
-            ax.plot(ranges[i], ranges[i], "k--", alpha=0.7)
+            ax.plot(ranges[i], ranges[i], color="grey", linestyle="--", alpha=0.7)
             r2_val = r2_score(true_list[i], pred_list[i])
             ax.set_title(rf"{title[i]} ($R^2$={r2_val:.2f})", fontsize=title_size, loc="right")
 
@@ -445,20 +445,20 @@ class Plotter:
         if not isinstance(sub_ylabel, list):
             sub_ylabel = [sub_ylabel] * n_plots
 
-        label_size = 20
-        tick_size = 16
-        title_size = 20
+        label_size = 25
+        tick_size = 25
+        title_size = 25
 
         # Change figure size to be taller than wide for 4×2 layout
         fig = plt.figure(figsize=(20, 30), dpi=dpi)
-        outer = gridspec.GridSpec(4, 2, wspace=0.15, hspace=0.1)
+        outer = gridspec.GridSpec(4, 2, wspace=0.15, hspace=0.18)
 
         for i in range(n_plots):
             row = i // 2
             col = i % 2
             
             inner = gridspec.GridSpecFromSubplotSpec(
-                2, 1, subplot_spec=outer[i], height_ratios=[6, 2], hspace=0.08
+                2, 1, subplot_spec=outer[i], height_ratios=[6, 2], hspace=0.18
             )
             ax1 = fig.add_subplot(inner[0])
             ax2 = fig.add_subplot(inner[1], sharex=ax1)
@@ -480,8 +480,7 @@ class Plotter:
             if rmse_title:
                 diff = np.array(pred_list[i]) - np.array(true_list[i])
                 rmse = np.sqrt(np.mean(diff**2))
-                sem = stats.sem(diff)
-                ax1.set_title(f"{title[i]} (RMSE={rmse:.2f} ± {sem:.2f})", fontsize=title_size, loc="right")
+                ax1.set_title(f"{title[i]} (RMSE={rmse:.2f})", fontsize=title_size, loc="right")
             else:
                 ax1.set_title(title[i], fontsize=title_size, loc="right")
                 
@@ -495,12 +494,12 @@ class Plotter:
             
             ax2.vlines(tr_bin[1:], 1, ratio, color="k", lw=1)
             for j, val in enumerate(ratio):
-                if val > 2:
+                if val >= 2:
                     ax2.annotate(
                         "", xy=(tr_bin[j + 1], 2), xytext=(tr_bin[j + 1], 1.95),
                         arrowprops=dict(facecolor="k", shrink=0.05, width=1, headwidth=2),
                     )
-                elif val < 0:
+                elif val <= 0:
                     ax2.annotate(
                         "", xy=(tr_bin[j + 1], 0), xytext=(tr_bin[j + 1], 0.05),
                         arrowprops=dict(facecolor="k", shrink=0.05, width=1, headwidth=2),
@@ -519,14 +518,13 @@ class Plotter:
                 ax2.set_ylabel("")
                 ax1.tick_params(labelleft=True)
                 ax2.tick_params(labelleft=False)
-
+                
             # Only set x-labels on the bottom row (row == 3)
             if row == 3:
                 ax2.set_xlabel(xlabel[i], fontsize=label_size, labelpad=xpad)
             else:
                 ax2.set_xlabel("")
-                ax2.tick_params(labelbottom=False)
-
+                # ax2.tick_params(labelbottom=False)
             ax1.tick_params(axis="both", labelsize=tick_size)
             ax2.tick_params(axis="both", labelsize=tick_size, pad=10)
 
@@ -537,7 +535,7 @@ class Plotter:
             ax = fig.add_subplot(outer[i])
             ax.axis('off')
 
-        plt.subplots_adjust(left=0.12, right=0.92, top=0.95, bottom=0.08, wspace=0.25, hspace=0.1)
+        plt.subplots_adjust(left=0.12, right=0.92, top=0.95, bottom=0.08, wspace=0.25, hspace=0.18)
 
         if save_name:
             plt.savefig(f"{save_name}.png", dpi=dpi, bbox_inches="tight")
@@ -576,12 +574,12 @@ class Plotter:
         if not isinstance(title, list):
             title = [title] * 8
 
-        label_size = 20
-        tick_size = 16
-        title_size = 20
+        label_size = 22
+        tick_size = 22
+        title_size = 22
 
         fig = plt.figure(figsize=(14, 25), dpi=dpi)
-        gs = gridspec.GridSpec(5, 2, height_ratios=[1, 1, 1, 1, 0.05], wspace=0.2, hspace=0.2)
+        gs = gridspec.GridSpec(5, 2, height_ratios=[1, 1, 1, 1, 0.04], wspace=0.2, hspace=0.25)
 
         axes = []
         for i in range(8):
@@ -631,7 +629,7 @@ class Plotter:
                 cmap="viridis", cmin=1, norm=norm, weights=weights,
             )
 
-            ax.plot(ranges[i], ranges[i], "k--", alpha=0.7)
+            ax.plot(ranges[i], ranges[i], color="grey", linestyle="--", alpha=0.7)
             r2_val = r2_score(true_list[i], pred_list[i])
             ax.set_title(rf"{title[i]} ($R^2$={r2_val:.2f})", fontsize=title_size, loc="right")
 
@@ -771,7 +769,7 @@ class Plotter:
                 diff = np.array(pred_list_1d[i]) - np.array(true_list_1d[i])
                 rmse = np.sqrt(np.mean(diff**2))
                 sem = stats.sem(diff)
-                ax1.set_title(f"{title[i]} (RMSE={rmse:.2f} ± {sem:.2f})", fontsize=title_size, loc="right")
+                ax1.set_title(f"{title[i]} (RMSE={rmse:.2f} ± {1.96*sem:.2f})", fontsize=title_size, loc="right")
             else:
                 ax1.set_title(title[i], fontsize=title_size, loc="right")
             ax1.legend(fontsize=title_size)
@@ -785,12 +783,12 @@ class Plotter:
             ratio = np.divide(pr_bar + 1, tr_bar + 1, where=(tr_bar != 0))
             ax2.vlines(tr_bin[1:], 1, ratio, color="k", lw=1)
             for j, val in enumerate(ratio):
-                if val > 2:
+                if val >= 2:
                     ax2.annotate(
                         "", xy=(tr_bin[j + 1], 2), xytext=(tr_bin[j + 1], 1.95),
                         arrowprops=dict(facecolor="k", shrink=0.05, width=1, headwidth=2),
                     )
-                elif val < 0:
+                elif val <= 0:
                     ax2.annotate(
                         "", xy=(tr_bin[j + 1], 0), xytext=(tr_bin[j + 1], 0.05),
                         arrowprops=dict(facecolor="k", shrink=0.05, width=1, headwidth=2),
@@ -827,7 +825,7 @@ class Plotter:
                 cmap="viridis", cmin=1, norm=norm, weights=weights,
             )
 
-            ax.plot(ranges[i], ranges[i], "k--", alpha=0.7)
+            ax.plot(ranges[i], ranges[i], color="grey", linestyle="--", alpha=0.7)
             r2_val = r2_score(true_list_2d[i], pred_list_2d[i])
             ax.set_title(f"{title[i]} ($R^2$={r2_val:.2f})", fontsize=title_size, loc="right")
 
@@ -945,7 +943,7 @@ class Plotter:
                 diff = np.array(pred_list_1d[i]) - np.array(true_list_1d[i])
                 rmse = np.sqrt(np.mean(diff**2))
                 sem = stats.sem(diff)
-                ax1.set_title(f"{title[i]} (RMSE={rmse:.2f} ± {sem:.2f})", fontsize=title_size, loc="right")
+                ax1.set_title(f"{title[i]} (RMSE={rmse:.2f} ± {1.96*sem:.2f})", fontsize=title_size, loc="right")
             else:
                 ax1.set_title(title[i], fontsize=title_size, loc="right")
             ax1.legend(fontsize=title_size)
@@ -959,12 +957,12 @@ class Plotter:
             ratio = np.divide(pr_bar + 1, tr_bar + 1, where=(tr_bar != 0))
             ax2.vlines(tr_bin[1:], 1, ratio, color="k", lw=1)
             for j, val in enumerate(ratio):
-                if val > 2:
+                if val >= 2:
                     ax2.annotate(
                         "", xy=(tr_bin[j + 1], 2), xytext=(tr_bin[j + 1], 1.95),
                         arrowprops=dict(facecolor="k", shrink=0.05, width=1, headwidth=2),
                     )
-                elif val < 0:
+                elif val <= 0:
                     ax2.annotate(
                         "", xy=(tr_bin[j + 1], 0), xytext=(tr_bin[j + 1], 0.05),
                         arrowprops=dict(facecolor="k", shrink=0.05, width=1, headwidth=2),
