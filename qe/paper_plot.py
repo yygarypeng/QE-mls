@@ -703,11 +703,11 @@ class Plotter:
         if not isinstance(title, list):
             title = [title] * 3
 
-        label_size = 20
-        tick_size = 16
-        title_size = 20
+        label_size = 22
+        tick_size = 22
+        title_size = 22
 
-        fig = plt.figure(figsize=(18, 14), dpi=dpi)
+        fig = plt.figure(figsize=(30, 20), dpi=dpi)
         gs = gridspec.GridSpec(2, 4, width_ratios=[1, 1, 1, 0.05], wspace=0.18, hspace=0.1)
 
         # First row: 1D histograms with ratio plots
@@ -901,12 +901,12 @@ class Plotter:
         if not isinstance(title, list):
             title = [title] * 3
 
-        label_size = 20
-        tick_size = 16
-        title_size = 20
+        label_size = 22
+        tick_size = 20
+        title_size = 22
 
         # Change figure size to be wider than tall since we only have one row
-        fig = plt.figure(figsize=(15, 8), dpi=dpi)
+        fig = plt.figure(figsize=(18, 8), dpi=dpi)
         
         # Create a single row grid with 3 columns
         gs = gridspec.GridSpec(1, 3, wspace=0.2)
@@ -992,6 +992,118 @@ class Plotter:
         plt.show()
         plt.close()
 
+    ########################
+    # 2D Grid (1×3)
+    ########################
+    def hist_2d3plot(
+        self,
+        true_list,
+        pred_list,
+        ranges=(0.0, 1.0),
+        xlabel="X",
+        ylabel="Y",
+        title="",
+        bins=50,
+        log=True,
+        xpad=15,
+        weights=None,
+        save_name=None,
+        dpi=500,
+    ):
+        """
+        Plot a 1 by 3 grid of 2D histograms comparing true and predicted values with a shared color bar.
+        """
+        if not isinstance(ranges, list):
+            ranges = [ranges] * 3
+        if not isinstance(xlabel, list):
+            xlabel = [xlabel] * 3
+        if not isinstance(ylabel, list):
+            ylabel = [ylabel] * 3
+        if not isinstance(title, list):
+            title = [title] * 3
+
+        label_size = 22
+        tick_size = 22
+        title_size = 22
+
+        fig = plt.figure(figsize=(18, 6), dpi=dpi)
+        gs = gridspec.GridSpec(1, 4, width_ratios=[1, 1, 1, 0.05], wspace=0.18)
+
+        axes = []
+        for i in range(3):
+            ax = fig.add_subplot(gs[0, i])
+            axes.append(ax)
+
+        # Ensure ranges are valid
+        for i in range(3):
+            if not isinstance(ranges[i], (list, tuple)) or len(ranges[i]) != 2:
+                ranges[i] = [min(true_list[i]), max(true_list[i])]
+
+        # Find global max/min counts for consistent color scaling
+        max_count = 0
+        min_count = float('inf')
+        for i in range(min(len(true_list), len(pred_list), 3)):
+            hist_vals, _, _ = np.histogram2d(
+                pred_list[i], true_list[i], bins=bins, range=[ranges[i], ranges[i]], weights=weights
+            )
+            max_count = max(max_count, np.max(hist_vals))
+            non_zero_min = np.min(hist_vals[hist_vals > 0]) if np.any(hist_vals > 0) else 1
+            min_count = min(min_count, non_zero_min)
+        
+        if min_count == float('inf'):
+            min_count = 1  # Fallback for empty or all-zero data
+
+        # Shared normalization
+        if log:
+            norm = LogNorm(vmin=min_count, vmax=max_count)
+        else:
+            norm = Normalize(vmin=min_count, vmax=max_count)
+
+        # Create the plots with shared normalization
+        for i, ax in enumerate(axes):
+            formatter = plt.ScalarFormatter(useMathText=True)
+            formatter.set_scientific(True)
+            formatter.set_powerlimits((-1, 1))
+            ax.xaxis.set_major_formatter(formatter)
+            ax.yaxis.set_major_formatter(formatter)
+            
+            h = ax.hist2d(
+                pred_list[i], true_list[i], bins=bins, range=[ranges[i], ranges[i]],
+                cmap="viridis", cmin=1, norm=norm, weights=weights,
+            )
+
+            ax.plot(ranges[i], ranges[i], color="grey", linestyle="--", alpha=0.7)
+            r2_val = r2_score(true_list[i], pred_list[i])
+            ax.set_title(rf"{title[i]} ($R^2$={r2_val:.2f})", fontsize=title_size, loc="right")
+
+            ax.set_ylabel(ylabel[i], fontsize=label_size)
+            ax.set_xlabel(xlabel[i], fontsize=label_size, labelpad=xpad)
+            ax.set_aspect("equal", adjustable="box")
+            ax.set_xlim(ranges[i])
+            ax.set_ylim(ranges[i])
+            ax.tick_params(axis="both", labelsize=tick_size, pad=10)
+            ax.xaxis.set_major_formatter(plt.ScalarFormatter(useMathText=True))
+            ax.yaxis.set_major_formatter(plt.ScalarFormatter(useMathText=True))
+
+        # Shared color bar
+        sm = plt.cm.ScalarMappable(cmap="viridis", norm=norm)
+        sm.set_array([])
+        cax = fig.add_subplot(gs[0, 3])
+        cbar = fig.colorbar(sm, cax=cax, orientation="vertical", pad=0.02, fraction=0.0467, aspect=20,)
+        cbar.set_label("Counts" if log else "Counts", fontsize=label_size, labelpad=5)
+        cbar.ax.tick_params(labelsize=tick_size)
+
+        plt.subplots_adjust(left=0.08, right=0.96, top=0.92, bottom=0.18, wspace=0.12)
+
+        if save_name:
+            plt.savefig(f"{save_name}.png", dpi=dpi, bbox_inches="tight")
+            print(f"Saved 2D grid as {save_name}.png")
+
+        plt.show()
+        plt.close()
+
+
+
 if __name__ == "__main__":
     plot = Plotter()
 
@@ -1043,6 +1155,11 @@ if __name__ == "__main__":
         true_list_1d, pred_list_1d, ranges=(-1, 1), xlabel="X", title="",
         row1_ylabel="Counts", row1_legend=["Separable", "SM"], bins=50, xpad=10,
         save_name="1d3plot_test", dpi=300,
+    )
+    
+    plot.hist_2d3plot(
+        true_list_2d, pred_list_2d, ranges=(-1, 1), xlabel="X", ylabel="Y",
+        title="", bins=50, log=True, xpad=10, save_name="2d3plot_test", dpi=300,
     )
     
     plot.hist_1d_grid_4plots(

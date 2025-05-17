@@ -2,7 +2,8 @@ from dataclasses import dataclass
 import pandas as pd
 import numpy as np
 
-data_path = "/root/data/recotruth/Truth_Reco_345324_multi_rtag_w.h5"
+# data_path = "/root/data/recotruth/Truth_Reco_345324_multi_rtag_w.h5"
+data_path = "/root/data/Truth_Reco_345324_multi_rtag.h5"
 with pd.HDFStore(data_path) as store:
     keys = store.keys()
     print(keys)
@@ -42,7 +43,8 @@ class Lead_lep:
     phi = pd.read_hdf(data_path, "RecoLep0")["Phi"]
     p4 = np.array([px, py, pz, energy]).T
     p3 = np.array([px, py, pz]).T
-    q = pd.read_hdf(data_path, "RecoLep0")["F"]
+    f = pd.read_hdf(data_path, "RecoLep0")["F"]
+    q = pd.read_hdf(data_path, "RecoLep0")["Q"]
 
 
 @dataclass
@@ -56,7 +58,8 @@ class Sublead_lep:
     phi = pd.read_hdf(data_path, "RecoLep1")["Phi"]
     p4 = np.array([px, py, pz, energy]).T
     p3 = np.array([px, py, pz]).T
-    q = pd.read_hdf(data_path, "RecoLep1")["F"]
+    f = pd.read_hdf(data_path, "RecoLep1")["F"]
+    q = pd.read_hdf(data_path, "RecoLep1")["Q"]
 
 
 @dataclass
@@ -125,12 +128,12 @@ class Truth_dilep:
     m = m(p4)
 
 
-@dataclass
-class Truth_met:
-    px = pd.read_hdf(data_path, "TruthCandMET")["Px"] * GEV
-    py = pd.read_hdf(data_path, "TruthCandMET")["Py"] * GEV
-    phi = pd.read_hdf(data_path, "TruthCandMET")["Phi"]
-    pt = pt(px, py)
+# @dataclass
+# class Truth_met:
+#     px = pd.read_hdf(data_path, "TruthCandMET")["Px"] * GEV
+#     py = pd.read_hdf(data_path, "TruthCandMET")["Py"] * GEV
+#     phi = pd.read_hdf(data_path, "TruthCandMET")["Phi"]
+#     pt = pt(px, py)
 
 @dataclass
 class Truth_lead_nu:
@@ -184,9 +187,9 @@ class Sublead_w:
     p3 = np.array([px, py, pz]).T
 
 
-@dataclass
-class MC_weight:
-    w = pd.read_hdf(data_path, "mcWeight")
+# @dataclass
+# class MC_weight:
+#     w = pd.read_hdf(data_path, "mcWeight")
 
 
 if __name__ == "__main__":
@@ -197,9 +200,9 @@ if __name__ == "__main__":
     print(Truth_lead_lep)
     print(Truth_sublead_lep)
     print(Truth_dilep)
-    print(Truth_met)
+    # print(Truth_met)
     print(Truth_lead_nu)
     print(Truth_sublead_nu)
     print(Lead_w)
     print(Sublead_w)
-    print(MC_weight)
+    # print(MC_weight)
