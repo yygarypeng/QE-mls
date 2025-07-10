@@ -178,7 +178,7 @@ class Plotter:
         rmse_title=False,
         weights=None,
         save_name=None,
-        dpi=500,
+        dpi=150,
     ):
         """
         Plot a 2*3 grid of 1D histograms comparing true and predicted values.
@@ -297,7 +297,7 @@ class Plotter:
         xpad=15,
         weights=None,
         save_name=None,
-        dpi=500,
+        dpi=150,
     ):
         """
         Plot a 2*3 grid of 2D histograms comparing true and predicted values with a shared color bar.
@@ -425,7 +425,7 @@ class Plotter:
         rmse_title=False,
         weights=None,
         save_name=None,
-        dpi=500,
+        dpi=150,
     ):
         """
         Plot a 4*2 grid of 1D histograms comparing true and predicted values.
@@ -560,7 +560,7 @@ class Plotter:
         xpad=15,
         weights=None,
         save_name=None,
-        dpi=500,
+        dpi=150,
     ):
         """
         Plot a 4*2 grid of 2D histograms comparing true and predicted values with a shared color bar.
@@ -691,7 +691,7 @@ class Plotter:
         rmse_title=False,
         weights=None,
         save_name=None,
-        dpi=500,
+        dpi=150,
     ):
         """
         Plot a 2x3 grid where first row has 1D histograms and second row has 2D histograms.
@@ -889,7 +889,7 @@ class Plotter:
         rmse_title=False,
         weights=None,
         save_name=None,
-        dpi=500,
+        dpi=150,
     ):
         """
         Plot a 1×3 grid with 1D histograms and ratio plots.
@@ -1008,7 +1008,7 @@ class Plotter:
         xpad=15,
         weights=None,
         save_name=None,
-        dpi=500,
+        dpi=150,
     ):
         """
         Plot a 1 by 3 grid of 2D histograms comparing true and predicted values with a shared color bar.
