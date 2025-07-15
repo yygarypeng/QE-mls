@@ -130,12 +130,12 @@ class Plotter:
         fig, ax = plt.subplots(figsize=(8, 8))
         if log:
             h = ax.hist2d(
-                pred, true, bins=bins, range=[ranges, ranges], cmap="viridis", cmin=1,
+                pred, true, bins=bins, range=[ranges, ranges], cmap="Blues", cmin=1,
                 norm=LogNorm(), weights=weights,
             )
         else:
             h = ax.hist2d(
-                pred, true, bins=bins, range=[ranges, ranges], cmap="viridis", cmin=1,
+                pred, true, bins=bins, range=[ranges, ranges], cmap="Blues", cmin=1,
                 weights=weights,
             )
         cbar = fig.colorbar(h[3], ax=ax, fraction=0.046, pad=0.04)
@@ -363,7 +363,7 @@ class Plotter:
             
             h = ax.hist2d(
                 pred_list[i], true_list[i], bins=bins, range=[ranges[i], ranges[i]],
-                cmap="viridis", cmin=1, norm=norm, weights=weights,
+                cmap="Blues", cmin=1, norm=norm, weights=weights,
             )
 
             ax.plot(ranges[i], ranges[i], color="grey", linestyle="--", alpha=0.7)
@@ -391,7 +391,7 @@ class Plotter:
             ax.yaxis.set_major_formatter(plt.ScalarFormatter(useMathText=True))
 
         # Shared color bar
-        sm = plt.cm.ScalarMappable(cmap="viridis", norm=norm)
+        sm = plt.cm.ScalarMappable(cmap="Blues", norm=norm)
         sm.set_array([])
         cax = fig.add_subplot(gs[:, 3])
         cbar = fig.colorbar(sm, cax=cax, orientation="vertical")
@@ -626,7 +626,7 @@ class Plotter:
             
             h = ax.hist2d(
                 pred_list[i], true_list[i], bins=bins, range=[ranges[i], ranges[i]],
-                cmap="viridis", cmin=1, norm=norm, weights=weights,
+                cmap="Blues", cmin=1, norm=norm, weights=weights,
             )
 
             ax.plot(ranges[i], ranges[i], color="grey", linestyle="--", alpha=0.7)
@@ -653,7 +653,7 @@ class Plotter:
             ax.yaxis.set_major_formatter(plt.ScalarFormatter(useMathText=True))
 
         # Shared color bar at the bottom
-        sm = plt.cm.ScalarMappable(cmap="viridis", norm=norm)
+        sm = plt.cm.ScalarMappable(cmap="Blues", norm=norm)
         sm.set_array([])
         cax = fig.add_subplot(gs[4, :])  
         cbar = fig.colorbar(sm, cax=cax, orientation="horizontal")
@@ -822,7 +822,7 @@ class Plotter:
 
             h = ax.hist2d(
                 pred_list_2d[i], true_list_2d[i], bins=bins, range=[ranges[i], ranges[i]],
-                cmap="viridis", cmin=1, norm=norm, weights=weights,
+                cmap="Blues", cmin=1, norm=norm, weights=weights,
             )
 
             ax.plot(ranges[i], ranges[i], color="grey", linestyle="--", alpha=0.7)
@@ -845,7 +845,7 @@ class Plotter:
             ax.yaxis.set_major_formatter(plt.ScalarFormatter(useMathText=True))
 
         # Shared color bar aligned with the last 2D subplot
-        sm = plt.cm.ScalarMappable(cmap="viridis", norm=norm)
+        sm = plt.cm.ScalarMappable(cmap="Blues", norm=norm)
         sm.set_array([])
         cax = fig.add_subplot(gs[1, 3])  # Use GridSpec for initial placement
         last_ax_pos = second_row_axes[2].get_position()  # Get final position after layout
@@ -1069,7 +1069,7 @@ class Plotter:
             
             h = ax.hist2d(
                 pred_list[i], true_list[i], bins=bins, range=[ranges[i], ranges[i]],
-                cmap="viridis", cmin=1, norm=norm, weights=weights,
+                cmap="Blues", cmin=1, norm=norm, weights=weights,
             )
 
             ax.plot(ranges[i], ranges[i], color="grey", linestyle="--", alpha=0.7)
@@ -1086,7 +1086,7 @@ class Plotter:
             ax.yaxis.set_major_formatter(plt.ScalarFormatter(useMathText=True))
 
         # Shared color bar
-        sm = plt.cm.ScalarMappable(cmap="viridis", norm=norm)
+        sm = plt.cm.ScalarMappable(cmap="Blues", norm=norm)
         sm.set_array([])
         cax = fig.add_subplot(gs[0, 3])
         cbar = fig.colorbar(sm, cax=cax, orientation="vertical", pad=0.02, fraction=0.0467, aspect=20,)
