@@ -26,9 +26,8 @@ GEV = 1e-3
 BATCH_SIZE = 512
 EPOCHS = 1024
 LEARNING_RATE = 1e-4
-# LOSS_WEIGHTS = {"mae": 2.0, "w_mass_mmd0": 8.0, "w_mass_mmd1": 8.0, "higgs_mass": 1.0}
-LOSS_WEIGHTS = {"mae": 2.0, "theta_mmd0": 1.0, "theta_mmd1": 1.0, "phi_mmd0": 1.0, "phi_mmd1": 1.0, "neg_r2": 0.0}
-SIGMA_LST = [0.1, 0.5, 1.0, 5.0, 10.0, 50.0]
+LOSS_WEIGHTS = {"mae": 1.0, "w_mass_mmd0": 8.0, "w_mass_mmd1": 8.0}
+SIGMA_LST = [0.05, 0.1, 0.5, 1.0, 5.0, 10.0]
 
 
 def compute_mmd(x, y, sigma_list=SIGMA_LST):
@@ -119,25 +118,6 @@ def w_mass_mmd_loss_fn(y_true, y_pred):
 
     return compute_mmd(w0_mass, w0_true_mass), compute_mmd(w1_mass, w1_true_mass)
 
-def theta_mmd_loss_fn(y_true, y_pred):
-    y_pred = tf.cast(y_pred, tf.float32)
-    y_true = tf.cast(y_true, tf.float32)
-    lead_theta_pred = y_pred[..., 0]
-    lead_theta_true = y_true[..., 0]
-    sublead_theta_pred = y_pred[..., 2]
-    sublead_theta_true = y_true[..., 2]
-
-    return compute_mmd(lead_theta_pred, lead_theta_true), compute_mmd(sublead_theta_pred, sublead_theta_true)
-
-def phi_mmd_loss_fn(y_true, y_pred):
-    y_pred = tf.cast(y_pred, tf.float32)
-    y_true = tf.cast(y_true, tf.float32)
-    lead_phi_pred = y_pred[..., 1]
-    lead_phi_true = y_true[..., 1]
-    sublead_phi_pred = y_pred[..., 3]
-    sublead_phi_true = y_true[..., 3]
-
-    return compute_mmd(lead_phi_pred, lead_phi_true), compute_mmd(sublead_phi_pred, sublead_phi_true)
 
 def nu_mass_loss_fn(x_batch, y_pred):
     x_batch = tf.cast(x_batch, tf.float32)
@@ -184,8 +164,7 @@ def dinu_pt_loss_fn(x_batch, y_pred):
 
 def higgs_mass_loss_fn(y_pred):
     y_pred = tf.cast(y_pred, tf.float32)
-    _higgs_mass = tf.constant(125.0, dtype=tf.float32)
-    
+
     w0_4Vect, w1_4Vect = y_pred[..., :4], y_pred[..., 4:8]
     higgs_4Vect = w0_4Vect + w1_4Vect
 
@@ -199,8 +178,8 @@ def higgs_mass_loss_fn(y_pred):
         )
     )
 
-    # return tf.reduce_mean(tf.square(higgs_mass - _higgs_mass)) + 1e-10 # use mse to avoid to sharp 1st derivitive.
-    return tf.reduce_mean(tf.abs(higgs_mass - _higgs_mass)) + 1e-10
+    return tf.reduce_mean(tf.abs(higgs_mass - 125.0)) + 1e-10
+
 
 def mae_loss_fn(y_true, y_pred):
     y_true = tf.cast(y_true, tf.float32)[:, 0:8]
@@ -226,17 +205,13 @@ class CustomModel(tf.keras.Model):
         self.current_epoch = tf.Variable(0.0, trainable=False)
         self.metric_dict = {
             "mae_loss": tf.keras.metrics.Mean(name="mae_loss"),
-            # "nu_mass_loss": tf.keras.metrics.Mean(name="nu_mass_loss"),
-            # "w0_mass_mae_loss": tf.keras.metrics.Mean(name="w0_mass_mae_loss"),
-            # "w1_mass_mae_loss": tf.keras.metrics.Mean(name="w1_mass_mae_loss"),
-            # "w_mass_mmd0_loss": tf.keras.metrics.Mean(name="w_mass_mmd0_loss"),
-            # "w_mass_mmd1_loss": tf.keras.metrics.Mean(name="w_mass_mmd1_loss"),
-            # "higgs_mass_loss": tf.keras.metrics.Mean(name="higgs_mass_loss"),
-            # "dinu_pt_loss": tf.keras.metrics.Mean(name="dinu_pt_loss"),
-            "theta_mmd0_loss": tf.keras.metrics.Mean(name="theta_mmd0_loss"),
-            "theta_mmd1_loss": tf.keras.metrics.Mean(name="theta_mmd1_loss"),
-            "phi_mmd0_loss": tf.keras.metrics.Mean(name="phi_mmd0_loss"),
-            "phi_mmd1_loss": tf.keras.metrics.Mean(name="phi_mmd1_loss"),
+            "nu_mass_loss": tf.keras.metrics.Mean(name="nu_mass_loss"),
+            "w0_mass_mae_loss": tf.keras.metrics.Mean(name="w0_mass_mae_loss"),
+            "w1_mass_mae_loss": tf.keras.metrics.Mean(name="w1_mass_mae_loss"),
+            "w_mass_mmd0_loss": tf.keras.metrics.Mean(name="w_mass_mmd0_loss"),
+            "w_mass_mmd1_loss": tf.keras.metrics.Mean(name="w_mass_mmd1_loss"),
+            "higgs_mass_loss": tf.keras.metrics.Mean(name="higgs_mass_loss"),
+            "dinu_pt_loss": tf.keras.metrics.Mean(name="dinu_pt_loss"),
             "neg_r2_loss": tf.keras.metrics.Mean(name="neg_r2_loss"),
             "loss": tf.keras.metrics.Mean(name="loss"),
         }
@@ -291,17 +266,13 @@ class CustomModel(tf.keras.Model):
         super().compile(optimizer=optimizer, **kwargs)
         default_weights = {
             "mae": 1.0,
-            # "nu_mass": 0.0,
-            # "higgs_mass": 0.0,
-            # "w0_mass_mae": 0.0,
-            # "w1_mass_mae": 0.0,
-            # "w_mass_mmd0": 0.0,
-            # "w_mass_mmd1": 0.0,
-            # "dinu_pt": 0.0,
-            "theta_mmd0": 0.0,
-            "theta_mmd1": 0.0,
-            "phi_mmd0": 0.0,
-            "phi_mmd1": 0.0,
+            "nu_mass": 0.0,
+            "higgs_mass": 0.0,
+            "w0_mass_mae": 0.0,
+            "w1_mass_mae": 0.0,
+            "w_mass_mmd0": 0.0,
+            "w_mass_mmd1": 0.0,
+            "dinu_pt": 0.0,
             "neg_r2": 0.0,
         }
         self.loss_weights = {**default_weights, **(loss_weights or {})}
@@ -316,17 +287,13 @@ class CustomModel(tf.keras.Model):
         outputs = predictions
         losses = {
             "mae": mae_loss_fn(y, outputs),
-            # "nu_mass": nu_mass_loss_fn(x, outputs),
-            # "higgs_mass": higgs_mass_loss_fn(outputs),
-            # "w0_mass_mae": w_mass_loss_fn(y, outputs)[0],
-            # "w1_mass_mae": w_mass_loss_fn(y, outputs)[1],
-            # "w_mass_mmd0": w_mass_mmd_loss_fn(y, outputs)[0],
-            # "w_mass_mmd1": w_mass_mmd_loss_fn(y, outputs)[1],
-            # "dinu_pt": dinu_pt_loss_fn(x, outputs),
-            "theta_mmd0": theta_mmd_loss_fn(y, outputs)[0],
-            "theta_mmd1": theta_mmd_loss_fn(y, outputs)[1],
-            "phi_mmd0": phi_mmd_loss_fn(y, outputs)[0],
-            "phi_mmd1": phi_mmd_loss_fn(y, outputs)[1],
+            "nu_mass": nu_mass_loss_fn(x, outputs),
+            "higgs_mass": higgs_mass_loss_fn(outputs),
+            "w0_mass_mae": w_mass_loss_fn(y, outputs)[0],
+            "w1_mass_mae": w_mass_loss_fn(y, outputs)[1],
+            "w_mass_mmd0": w_mass_mmd_loss_fn(y, outputs)[0],
+            "w_mass_mmd1": w_mass_mmd_loss_fn(y, outputs)[1],
+            "dinu_pt": dinu_pt_loss_fn(x, outputs),
             "neg_r2": neg_r2_loss_fn(y, outputs),
         }
         total_loss = tf.add_n(
@@ -412,28 +379,25 @@ def build_model(input_shape):
     """Build the W boson regressor model."""
     inputs = tf.keras.layers.Input(shape=(input_shape,), dtype=tf.float32)
     x = inputs
-    # lep0, lep1 = inputs[..., :4], inputs[..., 4:8]
+    lep0, lep1 = inputs[..., :4], inputs[..., 4:8]
 
-    for _ in range(2):
-        x = residual_block(x, 256, dropout_rate=0.2, l2=2e-4)
-        x = residual_block(x, 128, dropout_rate=0.2, l2=2e-4)
     for _ in range(3):
-        x = residual_block(x, 32, dropout_rate=0.2, l2=2e-4)
-        x = residual_block(x, 64, dropout_rate=0.2, l2=2e-4)
+        x = residual_block(x, 256, dropout_rate=0.2, l2=1e-4)
+        x = residual_block(x, 128, dropout_rate=0.2, l2=1e-4)
+    for _ in range(2):
+        x = residual_block(x, 128, dropout_rate=0.2, l2=1e-4)
+        x = residual_block(x, 256, dropout_rate=0.2, l2=1e-4)
     
     # bottleneck
-    # x = dense_dropout_block(x, 128, dropout_rate=0.0, l2=0.0)
-    x = dense_dropout_block(x, 8 , dropout_rate=0.0, l2=0.0)
+    x = dense_dropout_block(x, 128, dropout_rate=0.0, l2=0.0)
+    x = dense_dropout_block(x, 32 , dropout_rate=0.0, l2=0.0)
     
-    # nu_3mom = tf.keras.layers.Dense(
-    #     6, activation="linear", kernel_initializer="he_normal"
-    # )(x)
-    
-    # outputs = WBosonFourVectorLayer()([lep0, lep1, nu_3mom])
-    # test for w-rest training: apply within [-1, 1]
-    outputs = tf.keras.layers.Dense(
-        4, activation="tanh", kernel_initializer="he_normal"
+    nu_3mom = tf.keras.layers.Dense(
+        6, activation="linear", kernel_initializer="he_normal"
     )(x)
+    
+    outputs = WBosonFourVectorLayer()([lep0, lep1, nu_3mom])
+    
     return tf.keras.Model(inputs=inputs, outputs=outputs)
 
 
