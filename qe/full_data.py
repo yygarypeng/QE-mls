@@ -3,7 +3,8 @@ import pandas as pd
 import numpy as np
 
 # data_path = "/root/data/recotruth/Truth_Reco_345324_multi_rtag_w.h5"
-data_path = "/root/data/Truth_Reco_345324_multi_rtag.h5"
+# TODO: update to mc20 v5 sample
+data_path = "/root/data/archived/Truth_Reco_345324_multi_rtag.h5"
 with pd.HDFStore(data_path) as store:
     keys = store.keys()
     print(keys)
